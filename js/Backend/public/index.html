@@ -1,0 +1,41 @@
+<head>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div id="game-container">
+        <h1>Guess the Stations!</h1>
+        <div id="game-setup-1">
+            <label for="country-select">Land auswählen:</label>
+            <select id="country-select">
+                <option value="ch">Schweiz</option>
+                <option value="de">Deutschland</option>
+            </select>
+            <button id="country-button">Weiter</button>
+        </div>
+        <div id="game-setup-2" class="hidden">
+            <label for="difficulty-select">Schwierigkeitsgrad auswählen:</label>
+            <select id="difficulty-select">
+                <option value="easy">Leicht</option>
+                <option value="medium">Mittel</option>
+                <option value="hard">Schwer</option>
+            </select>
+            <button id="difficulty-button">Spiel starten</button>
+        </div>
+        <div id="game-input" class="hidden">
+            <label for="user-input">Gib hier deine Versuche an:</label>
+            <input type="text" id="user-input">
+            <button id="submit-button">Absenden</button>
+            <button type="button" id="cancel-button">Abbruch</button>
+            <button type="button" id="restart-button">Neustarten</button>
+            <button type="button" id="share">Teilen</button>
+        </div>
+        <div id="game-output" class="hidden">
+            <h2 id="train-name"></h2>
+            <p id="score"></p>
+            <p id="result"></p>
+            <ul id="stop-list" class="stop-list">
+            </ul>
+        </div>
+    </div>
+    <script src="index.js"></script>
+</body>

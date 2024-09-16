@@ -1,7 +1,7 @@
 window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
     const gameId = urlParams.get('id');
-    fetch('http://localhost:3000/game-data', {
+    fetch('/game-data', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -42,3 +42,4 @@ function updateStationList(guesses, stops){
         correctList.innerHTML += '<li>' + stop + '</li>';
     });
 }
+

@@ -1,5 +1,6 @@
 let gameId;
 let country;
+let hintAmount = 0;
 
 document.getElementById('country-button').addEventListener('click', function() {
     document.getElementById('game-setup-1').classList.add('hidden');
@@ -12,9 +13,11 @@ document.getElementById('difficulty-button').addEventListener('click', function(
     document.getElementById('game-input').classList.remove('hidden');
     document.getElementById('game-output').classList.remove('hidden');
     document.getElementById('share').classList.add('hidden');
+    document.getElementById('save').classList.add('hidden');
+
 
     let difficulty = document.getElementById('difficulty-select').value;
-    fetch('http://localhost:3000/start-game', {
+    fetch('/start-game', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -31,8 +34,8 @@ document.getElementById('difficulty-button').addEventListener('click', function(
         document.getElementById('game-input').classList.remove('hidden');
         document.getElementById('game-output').classList.remove('hidden');
         document.getElementById('share').classList.add('hidden');
-
-        fetch('http://localhost:3000/get-train-name', {
+        document.getElementById('save').classList.add('hidden');
+        fetch('/get-train-name', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -45,7 +48,7 @@ document.getElementById('difficulty-button').addEventListener('click', function(
         .then(data => {
             document.getElementById('train-name').innerText = data.result;
         });
-        fetch('http://localhost:3000/get-guessed-stops', {
+        fetch('/get-guessed-stops', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -76,7 +79,7 @@ document.getElementById('share').addEventListener('click', function() {
     alert('Link kopiert!');
 });
 document.getElementById('cancel-button').addEventListener('click', function() {
-    fetch('http://localhost:3000/cancel-game', {
+    fetch('/cancel-game', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -91,14 +94,48 @@ document.getElementById('cancel-button').addEventListener('click', function() {
             updateScore();
             document.getElementById('result').innerText = 'Spiel abgebrochen';
             updateStationList(data.result);
+            updateTime();
             afterGame();
         }
     });
 });
+function updateTime(){
+    fetch('/get-time', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            gameId: gameId
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.result) {
+                let time = data.result;
+                let totalSeconds = Math.floor(time / 1000)
+                let hours = Math.floor(totalSeconds / 3600)
+                totalSeconds %= 3600;
+                let minutes = Math.floor(totalSeconds / 60)
+                let seconds = totalSeconds % 60;
+                if(hours < 10){
+                    hours = "0" + hours;
+                }
+                if(minutes < 10){
+                    minutes = "0" + minutes;
+                }
+                if(seconds < 10){
+                    seconds = "0" + seconds;
+                }
+                document.getElementById('time').innerText = hours + ':' + minutes + ':' + seconds;
+            }
+        });
+}
 
 function submit() {
     var userInput = document.getElementById('user-input').value;
-    fetch('http://localhost:3000/check-station', {
+    document.getElementById('user-input').value = '';
+        fetch('/check-station', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -116,7 +153,7 @@ function submit() {
                 document.getElementById('result').innerText = 'Falsch!';
             }
         });
-    fetch('http://localhost:3000/get-guessed-stops', {
+    fetch('/get-guessed-stops', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -130,7 +167,7 @@ function submit() {
             let guessedStops = data.result;
             updateStationList(guessedStops);
         });
-    fetch('http://localhost:3000/check-win', {
+    fetch('/check-win', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -144,15 +181,34 @@ function submit() {
                 updateScore();
                 document.getElementById('result').innerText = 'Gewonnen!';
                 afterGame();
+                updateTime();
             }
         });
 }
 document.getElementById('restart-button').addEventListener('click', function() {
     location.reload();
 });
+document.getElementById('hint').addEventListener('click', function() {
+    fetch('/hint', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            gameId: gameId,
+            hintAmount: hintAmount
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            updateStationList(data.result);
+            hintAmount++;
+        });
+});
+
 window.addEventListener('beforeunload', function (event) {
     if(gameId) {
-        fetch('http://localhost:3000/delete-game', {
+        fetch('/delete-game', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -163,13 +219,70 @@ window.addEventListener('beforeunload', function (event) {
         });
     }
 });
+window.onblur = function() {
+    if(gameId){
+        fetch('/cancel-game', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                gameId: gameId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.result) {
+                updateScore();
+                document.getElementById('result').innerText = 'Spiel abgebrochen';
+                updateStationList(data.result);
+                afterGame();
+            }
+        });
+    } 
+}
+document.getElementById('save').addEventListener('click', function() {
+    document.getElementById('save').classList.add('hidden');
+    document.getElementById('game-input').classList.add('hidden');
+    document.getElementById('game-output').classList.add('hidden');
+    document.getElementById('share').classList.add('hidden');
+    document.getElementById('save-input').classList.remove('hidden');
+});
+document.getElementById('save-button').addEventListener('click', function() {
+
+    let name = document.getElementById('save-name').value;
+    if (name === '') {
+        alert('Bitte geben Sie einen Namen ein!');
+        return;
+    }
+    document.getElementById('save-button').classList.add('hidden');
+    document.getElementById('save-input').classList.add('hidden');
+    document.getElementById('game-input').classList.remove('hidden');
+    document.getElementById('game-output').classList.remove('hidden');
+    document.getElementById('restart-button').classList.remove('hidden');
+    document.getElementById('share').classList.remove('hidden');
+    document.getElementById('user-input').classList.add('hidden');
+    fetch('/save-game', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            gameId: gameId,
+            name: name
+        })
+    });
+
+});
 function afterGame() {
     document.getElementById('user-input').classList.add('hidden');
     document.getElementById('submit-button').classList.add('hidden');
     document.getElementById('cancel-button').classList.add('hidden');
+    document.getElementById('hint').classList.add('hidden');
     document.getElementById('restart-button').classList.remove('hidden');
     document.getElementById('share').classList.remove('hidden');
-    fetch('http://localhost:3000/archive-train', {
+    document.getElementById('save').classList.remove('hidden');
+    fetch('/archive-train', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -188,8 +301,8 @@ function updateStationList(stations) {
         guessedStopsList.appendChild(li);
     });
 }
-function updateScore(score) {
-    fetch('http://localhost:3000/get-score', {
+function updateScore() {
+    fetch('/get-score', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -200,6 +313,33 @@ function updateScore(score) {
     })
         .then(response => response.json())
         .then(data => {
-            document.getElementById('score').innerText = "Score: " + data.result;
+            let score = data.result.score;
+            let unDeducedScore = data.result.unDeducedScore;
+            document.getElementById('score').innerText = score + ' Punkte (' + unDeducedScore + ' Punkte ohne Abzüge)';
         });
 }
+window.onload = function() {
+    updateLeaderboard();
+    setInterval(async () => {
+        updateLeaderboard();
+    }, 10000);
+};
+
+function updateLeaderboard(){
+    fetch('/get-top?amount=10')
+        .then(response => response.json())
+        .then(data => {
+            let top = data.result;
+            let leaderboard = document.getElementById('leaderboard');
+            leaderboard.innerHTML = '';
+            top.forEach((entry, index) => {
+                let li = document.createElement('li');
+                let url = window.location.href + 'shared-result.html?id=' + entry.id;
+                li.innerHTML = '<a href="' + url + '">' + entry.name + ' - ' + entry.score + ' Punkte</a>';
+                leaderboard.appendChild(li);
+            });
+        });
+}
+document.getElementById('sts-btn').addEventListener('click', function() {
+    window.location.href = 'sort-the-stations.html';
+});

@@ -46,6 +46,7 @@ class GameTrain extends Train {
             stop = stop.replace(/ $/, '');
             return stop;
         });
+        this.stops = [...new Set(this.stops)]
     }
 }
 

@@ -2,7 +2,7 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-    <div id="game-container">
+    <div class="game-container">
         <h1>Guess the Stations!</h1>
         <div id="game-setup-1">
             <label for="country-select">Land auswählen:</label>
@@ -27,15 +27,29 @@
             <button id="submit-button">Absenden</button>
             <button type="button" id="cancel-button">Abbruch</button>
             <button type="button" id="restart-button">Neustarten</button>
+            <button type="button" id="hint">Tipp (-20% des Scores)</button>
             <button type="button" id="share">Teilen</button>
+            <button type="button" id="save">Ergebnis Speichern</button>
+        </div>
+        <div id="save-input" class="hidden">
+            <h2>Speichern</h2>
+            <label for="name">Name:</label>
+            <input type="text" id="save-name">
+            <button id="save-button">Speichern</button>
         </div>
         <div id="game-output" class="hidden">
             <h2 id="train-name"></h2>
             <p id="score"></p>
+            <p id="time"></p>
             <p id="result"></p>
             <ul id="stop-list" class="stop-list">
             </ul>
         </div>
+    </div>
+    <div class="game-container" id="highscores">
+        <h1>Highscores</h1>
+        <ul id="leaderboard" class="stop-list">
+        </ul>
     </div>
     <script src="index.js"></script>
 </body>

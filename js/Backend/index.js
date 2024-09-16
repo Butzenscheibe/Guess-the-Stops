@@ -1,14 +1,35 @@
 const express = require('express');
-const {createGame, checkGame, getGuessedStops, getTrainName, checkStation, checkWin, getSolutions, deleteGame, getScore, archiveGame, getArchiveGameFromDB} = require('./gameManager');
+const {
+    createGame,
+    checkGame,
+    checkStation,
+    getHint,
+    checkWin,
+    getGuessedStops,
+    getTrainName,
+    updateTime,
+    updateIsRunning,
+    getSolutions,
+    getScore,
+    deleteGame,
+    archiveGame,
+    saveGame,
+    getTop,
+    getArchiveGameFromDB,
+    isRunning,
+    getTime
+} = require('./gameManager');
+const sts = require('./sort-the-stations');
 const path = require('path');
 const app = express();
 app.use(express.json()); 
 app.use(express.static(path.join(__dirname, 'public')));
 
 async function createGameMiddleware(req, res, next) {
+    let starttime = Date.now();
     let country = req.body.country;
     let difficulty = req.body.difficulty
-    let gameID = await createGame(country, difficulty);
+    let gameID = await createGame(country, difficulty, starttime);
     req.gameID = gameID;
     next();
 }
@@ -39,9 +60,27 @@ app.post('/check-station', (req, res) => {
     
 });
 
+app.post('/hint', (req, res) => {
+    if(checkGame(req.body.gameId)) {
+        let hint = getHint(req.body.gameId, req.body.hintAmount);
+        res.json({result: hint});
+    }
+    else {
+        res.json({result: false});
+    }
+});
+
 app.post('/check-win', (req, res) => {
     if(checkGame(req.body.gameId)) {
-        res.json({result: checkWin(req.body.gameId)});
+        if(checkWin(req.body.gameId)) {
+            let endtime = Date.now();
+            updateTime(req.body.gameId, endtime);
+            updateIsRunning(req.body.gameId, false);
+            res.json({result: true})
+        }
+        else {
+            res.json({result: false});
+        }
     }
     else {
         res.json({result: false});
@@ -66,8 +105,16 @@ app.post('/get-train-name', (req, res) => {
 });
 app.post('/cancel-game', (req, res) => {
     if(checkGame(req.body.gameId)) {
-        let solutions = getSolutions(req.body.gameId);
-        res.json({result: solutions});
+        if(isRunning(req.body.gameId)) {
+            let endtime = Date.now();
+            updateTime(req.body.gameId, endtime);
+            updateIsRunning(req.body.gameId, false);
+            let solutions = getSolutions(req.body.gameId);
+            res.json({result: solutions});
+        }
+        else {
+            res.json({result: false});
+        }
     }
     else {
         res.json({result: false});
@@ -100,10 +147,70 @@ app.post('/archive-train', (req, res) => {
         res.json({result: false});
     }
 });
+app.post('/save-game', (req, res) => {
+    if(checkGame(req.body.gameId)) {
+        let name = req.body.name;
+        saveGame(req.body.gameId, name);
+        res.json({result: true});
+    }
+    else {
+        res.json({result: false});
+    }
+});
+app.post('/get-time', (req, res) => {
+    if(checkGame(req.body.gameId)) {
+        if(isRunning(req.body.gameId)) {
+           res.json({result: false});
+        } else {
+            let time = getTime(req.body.gameId);
+            res.json({result: time});
+        }
+    }
+    else {
+        res.json({result: false});
+    }
+});
+app.get('/get-top', async (req, res) => {
+    let amount = req.query.amount;
+    let top = await getTop(amount);
+    res.json({result: top});
+});
 app.post('/game-data', getArchiveGameMiddleware, (req, res) => {
     res.json({result: req.game});
 });
 
+// Sort the stations
+
+app.post('/sts/start-game', async (req, res) => {
+    let country = req.body.country;
+    let gameID = await sts.createSTSGame(country);
+    res.json({gameId: gameID});
+});
+app.post('/sts/check-solution', (req, res) => {
+    if(sts.checkGame(req.body.gameId)) {
+        res.json({result: sts.checkSolution(req.body.gameId, req.body.solution)});
+    }
+    else {
+        res.json({result: false});
+    }
+});
+app.post('/sts/get-shuffled-stops', (req, res) => {
+    if(sts.checkGame(req.body.gameId)) {
+        res.json({result: sts.getShuffledStops(req.body.gameId)});
+    }
+    else {
+        res.json({result: false});
+    }
+});
+app.post('/sts/get-trainname', (req, res) => {
+    if(sts.checkGame(req.body.gameId)) {
+        res.json({result: sts.getTrainName(req.body.gameId)});
+    }
+    else {
+        res.json({result: false});
+    }
+
+});
 app.get('/', (req, res) => {
     res.send(req.result);
 });

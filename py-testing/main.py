@@ -1,7 +1,5 @@
 import re
 import sqlite3
-from turtle import st
-from venv import create
 path = './database/timetable-gen'
 ger_path = './database/german-db'
 rand_route_sql = "select route_id from routes where route_desc in (select Abbr from transport_modes where Ref = 'Z' and Abbr not in ('TER','TGV','EXT','ZUG')) order by random() limit 1;"

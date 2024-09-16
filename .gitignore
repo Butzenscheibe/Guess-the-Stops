@@ -1,7 +1,5 @@
-database/
-db-files/
-db-total/
-test.zip
-mode_shorts
-node_modules/
-timetable-tmp/
+/database
+/db-files
+/db-total
+/timetable-tmp
+/js/Backend/node_modules

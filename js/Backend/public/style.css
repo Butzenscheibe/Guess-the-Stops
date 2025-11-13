@@ -974,6 +974,6 @@ button:disabled {
     font-weight: 500;
 }
 
-.app-footer a:hover {
-    color: var(--primary);
-}
+/* .app-footer a:hover {
+    color: var(--text-primary);
+} */

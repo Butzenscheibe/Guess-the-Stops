@@ -397,6 +397,7 @@ document.getElementById('save-button').addEventListener('click', function() {
     document.getElementById('game-output').classList.remove('hidden');
     document.getElementById('restart-button').classList.remove('hidden');
     document.getElementById('share').classList.remove('hidden');
+    document.getElementById('user-input-label').classList.add('hidden');
     document.getElementById('user-input').classList.add('hidden');
     fetch('/save-game', {
         method: 'POST',
@@ -412,6 +413,7 @@ document.getElementById('save-button').addEventListener('click', function() {
 });
 function afterGame() {
     stopFrontendTimer();
+    document.getElementById('user-input-label').classList.add('hidden');
     document.getElementById('user-input').classList.add('hidden');
     document.getElementById('submit-button').classList.add('hidden');
     document.getElementById('cancel-button').classList.add('hidden');

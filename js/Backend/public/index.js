@@ -1,6 +1,140 @@
 let gameId;
 let country;
 let hintAmount = 0;
+let frontendTimer = null;
+let gameStartTime = null;
+
+// Custom Dropdown Component
+function initCustomSelects() {
+    const selects = document.querySelectorAll('select');
+    
+    selects.forEach(select => {
+        // Skip if already converted
+        if (select.parentElement.classList.contains('custom-select')) return;
+        
+        const wrapper = document.createElement('div');
+        wrapper.className = 'custom-select';
+        select.parentNode.insertBefore(wrapper, select);
+        wrapper.appendChild(select);
+        
+        const styled = document.createElement('div');
+        styled.className = 'select-styled';
+        styled.textContent = select.options[select.selectedIndex].text;
+        wrapper.appendChild(styled);
+        
+        const optionsList = document.createElement('ul');
+        optionsList.className = 'select-options';
+        
+        Array.from(select.options).forEach((option, index) => {
+            const li = document.createElement('li');
+            li.textContent = option.text;
+            li.setAttribute('data-value', option.value);
+            if (index === select.selectedIndex) {
+                li.classList.add('selected');
+            }
+            optionsList.appendChild(li);
+        });
+        
+        wrapper.appendChild(optionsList);
+        
+        // Toggle dropdown
+        styled.addEventListener('click', function(e) {
+            e.stopPropagation();
+            // Close all other dropdowns
+            document.querySelectorAll('.select-styled.active').forEach(other => {
+                if (other !== styled) {
+                    other.classList.remove('active');
+                    other.nextElementSibling.classList.remove('active');
+                }
+            });
+            styled.classList.toggle('active');
+            optionsList.classList.toggle('active');
+        });
+        
+        // Select option
+        optionsList.querySelectorAll('li').forEach(li => {
+            li.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const value = this.getAttribute('data-value');
+                const text = this.textContent;
+                
+                // Update native select
+                select.value = value;
+                
+                // Trigger change event on native select
+                const event = new Event('change', { bubbles: true });
+                select.dispatchEvent(event);
+                
+                // Update styled select
+                styled.textContent = text;
+                
+                // Update selected class
+                optionsList.querySelectorAll('li').forEach(item => item.classList.remove('selected'));
+                this.classList.add('selected');
+                
+                // Close dropdown
+                styled.classList.remove('active');
+                optionsList.classList.remove('active');
+            });
+        });
+    });
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.select-styled.active').forEach(styled => {
+            styled.classList.remove('active');
+            styled.nextElementSibling.classList.remove('active');
+        });
+    });
+}
+
+// Dark mode functionality
+function initDarkMode() {
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const savedTheme = localStorage.getItem('theme');
+    
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+    }
+    
+    darkModeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+}
+
+// Initialize on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        initDarkMode();
+        initCustomSelects();
+    });
+} else {
+    initDarkMode();
+    initCustomSelects();
+}
+
+function startFrontendTimer() {
+    gameStartTime = Date.now();
+    frontendTimer = setInterval(() => {
+        const elapsed = Date.now() - gameStartTime;
+        const totalSeconds = Math.floor(elapsed / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        
+        const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        document.getElementById('time').innerText = `Time: ${timeStr}`;
+    }, 1000);
+}
+
+function stopFrontendTimer() {
+    if (frontendTimer) {
+        clearInterval(frontendTimer);
+        frontendTimer = null;
+    }
+}
 
 document.getElementById('country-button').addEventListener('click', function() {
     document.getElementById('game-setup-1').classList.add('hidden');
@@ -15,6 +149,8 @@ document.getElementById('difficulty-button').addEventListener('click', function(
     document.getElementById('share').classList.add('hidden');
     document.getElementById('save').classList.add('hidden');
 
+    // Start the frontend timer
+    startFrontendTimer();
 
     let difficulty = document.getElementById('difficulty-select').value;
     fetch('/start-game', {
@@ -275,6 +411,7 @@ document.getElementById('save-button').addEventListener('click', function() {
 
 });
 function afterGame() {
+    stopFrontendTimer();
     document.getElementById('user-input').classList.add('hidden');
     document.getElementById('submit-button').classList.add('hidden');
     document.getElementById('cancel-button').classList.add('hidden');
@@ -315,7 +452,7 @@ function updateScore() {
         .then(data => {
             let score = data.result.score;
             let unDeducedScore = data.result.unDeducedScore;
-            document.getElementById('score').innerText = score + ' Punkte (' + unDeducedScore + ' Punkte ohne Abzüge)';
+            document.getElementById('score').innerText = 'Score: ' + score + ' Punkte (' + unDeducedScore + ' Punkte ohne Abzüge)';
         });
 }
 window.onload = function() {

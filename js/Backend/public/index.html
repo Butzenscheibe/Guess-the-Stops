@@ -1,55 +1,87 @@
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Guess the train stations - A fun and educational game">
+    <meta name="theme-color" content="#3b82f6">
+    <title>Guess the Stations</title>
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-    <div class="game-container">
-        <h1>Guess the Stations!</h1>
-        <div id="game-setup-1">
-            <label for="country-select">Land auswählen:</label>
-            <select id="country-select">
-                <option value="ch">Schweiz</option>
-                <option value="de">Deutschland</option>
-            </select>
-            <button id="country-button">Weiter</button>
+    <!-- Dark Mode Toggle -->
+    <button id="dark-mode-toggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+        <svg class="sun-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
+        </svg>
+        <svg class="moon-icon hidden" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+        </svg>
+    </button>
+    
+    <!-- Main Content Wrapper -->
+    <div class="content-wrapper">
+        <div class="game-container">
+            <h1>Guess the Stations</h1>
+            
+            <div id="game-setup-1">
+                <label for="country-select">Select Country</label>
+                <select id="country-select">
+                    <option value="ch">Switzerland</option>
+                    <option value="de">Germany</option>
+                </select>
+                <button id="country-button">Continue</button>
+            </div>
+            
+            <div id="game-setup-2" class="hidden">
+                <label for="difficulty-select">Select Difficulty</label>
+                <select id="difficulty-select">
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+                <button id="difficulty-button">Start Game</button>
+            </div>
+            
+            <div id="game-input" class="hidden">
+                <label for="user-input">Enter Station Name</label>
+                <input type="text" id="user-input" placeholder="Type station name...">
+                <div class="button-grid">
+                    <button id="submit-button">Submit</button>
+                    <button type="button" id="hint">Hint (-20%)</button>
+                    <button type="button" id="cancel-button">Cancel</button>
+                    <button type="button" id="restart-button">Restart</button>
+                    <button type="button" id="share">Share</button>
+                    <button type="button" id="save">Save Result</button>
+                </div>
+            </div>
+            
+            <div id="save-input" class="hidden">
+                <h2>Save Your Result</h2>
+                <label for="save-name">Your Name</label>
+                <input type="text" id="save-name" placeholder="Enter your name...">
+                <button id="save-button">Save Score</button>
+            </div>
+            
+            <div id="game-output" class="hidden">
+                <h2 id="train-name">Loading...</h2>
+                <div class="stats-grid">
+                    <p id="score">Score: --</p>
+                    <p id="time">Time: --:--:--</p>
+                </div>
+                <p id="result">Waiting...</p>
+                <ul id="stop-list" class="stop-list"></ul>
+            </div>
         </div>
-        <div id="game-setup-2" class="hidden">
-            <label for="difficulty-select">Schwierigkeitsgrad auswählen:</label>
-            <select id="difficulty-select">
-                <option value="easy">Leicht</option>
-                <option value="medium">Mittel</option>
-                <option value="hard">Schwer</option>
-            </select>
-            <button id="difficulty-button">Spiel starten</button>
-        </div>
-        <div id="game-input" class="hidden">
-            <label for="user-input">Gib hier deine Versuche an:</label>
-            <input type="text" id="user-input">
-            <button id="submit-button">Absenden</button>
-            <button type="button" id="cancel-button">Abbruch</button>
-            <button type="button" id="restart-button">Neustarten</button>
-            <button type="button" id="hint">Tipp (-20% des Scores)</button>
-            <button type="button" id="share">Teilen</button>
-            <button type="button" id="save">Ergebnis Speichern</button>
-        </div>
-        <div id="save-input" class="hidden">
-            <h2>Speichern</h2>
-            <label for="name">Name:</label>
-            <input type="text" id="save-name">
-            <button id="save-button">Speichern</button>
-        </div>
-        <div id="game-output" class="hidden">
-            <h2 id="train-name"></h2>
-            <p id="score"></p>
-            <p id="time"></p>
-            <p id="result"></p>
-            <ul id="stop-list" class="stop-list">
-            </ul>
+        
+        <div class="game-container" id="highscores">
+            <h1>Leaderboard</h1>
+            <ul id="leaderboard" class="stop-list"></ul>
         </div>
     </div>
-    <div class="game-container" id="highscores">
-        <h1>Highscores</h1>
-        <ul id="leaderboard" class="stop-list">
-        </ul>
-    </div>
+    
+    <!-- Footer -->
+    <footer class="app-footer">
+        <p><a href="https://diebutzenscheibe.dev" target="_blank" rel="noopener noreferrer">© 2025 DieButzenscheibe</a></p>
+    </footer>
+    
     <script src="index.js"></script>
 </body>

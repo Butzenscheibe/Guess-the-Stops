@@ -29,16 +29,26 @@
     <meta name="theme-color" content="#3b82f6">
     <title>Shared Result - Guess the Stations</title>
     <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./cookie-consent.css">
     
-    <!-- Google Analytics (GA4) -->
+    <!-- Google Analytics (GA4) with Consent Mode -->
     <!-- Replace GA_MEASUREMENT_ID with your actual Google Analytics 4 Measurement ID -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
     <script>
+        // Initialize consent mode before analytics loads
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
+        
+        // Set default consent to denied
+        gtag('consent', 'default', {
+            'analytics_storage': 'denied'
+        });
+        
         gtag('js', new Date());
-        gtag('config', 'GA_MEASUREMENT_ID');
+        gtag('config', 'GA_MEASUREMENT_ID', {
+            'anonymize_ip': true
+        });
     </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
     
     <script src="shared-result.js"></script>
 </head>
@@ -61,5 +71,7 @@
             </div>
         </div>
     </div>
+    
+    <script src="cookie-consent.js"></script>
 </body>
 </html>

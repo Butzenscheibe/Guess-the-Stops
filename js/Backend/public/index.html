@@ -44,10 +44,7 @@
             <input type="text" id="user-input" placeholder="Type station name...">
             <div class="button-grid">
                 <button id="submit-button">Submit</button>
-                <button type="button" id="hint" class="tooltip-container">
-                    Hint (-20%)
-                    <span class="tooltip">Get a hint by revealing one random station. This reduces your final score by 20%.</span>
-                </button>
+                <button type="button" id="hint">Hint (-20%)</button>
                 <button type="button" id="cancel-button">Cancel</button>
                 <button type="button" id="restart-button">Restart</button>
                 <button type="button" id="share">Share</button>
@@ -65,10 +62,7 @@
         <div id="game-output" class="hidden">
             <h2 id="train-name">Loading...</h2>
             <div class="stats-grid">
-                <p id="score" class="tooltip-container">
-                    Score: --
-                    <span class="tooltip">Score is calculated based on correct guesses and time. Perfect score = 1000 points minus time penalty.</span>
-                </p>
+                <p id="score">Score: --</p>
                 <p id="time">Time: --:--:--</p>
             </div>
             <p id="result">Waiting...</p>

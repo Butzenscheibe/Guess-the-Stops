@@ -264,7 +264,7 @@ select {
     padding-right: 3rem;
 }
 
-/* Fix select arrow for dark mode */
+/* Dark mode arrow color */
 body.dark-mode select {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%2360a5fa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
@@ -283,15 +283,38 @@ input[type="text"]:focus {
     background-color: var(--bg-primary);
 }
 
+/* Dropdown option styling - limited browser support but we try */
 select option {
-    background: var(--bg-secondary);
+    background-color: var(--bg-primary);
     color: var(--text-primary);
-    padding: var(--spacing-sm);
+    padding: var(--spacing-md);
+    font-weight: 500;
+}
+
+select option:hover {
+    background-color: var(--primary-light);
+    color: var(--text-inverse);
+}
+
+select option:checked {
+    background-color: var(--primary);
+    color: var(--text-inverse);
+    font-weight: 600;
 }
 
 body.dark-mode select option {
-    background: var(--bg-secondary);
+    background-color: var(--surface);
     color: var(--text-primary);
+}
+
+body.dark-mode select option:hover {
+    background-color: var(--primary-light);
+    color: var(--text-inverse);
+}
+
+body.dark-mode select option:checked {
+    background-color: var(--primary);
+    color: var(--text-inverse);
 }
 
 input[type="text"]::placeholder {
@@ -737,66 +760,16 @@ button:disabled {
     }
 }
 
-/* GENERAL TOOLTIP SYSTEM */
-.tooltip-container {
-    position: relative;
-}
-
-.tooltip {
-    position: absolute;
-    bottom: calc(100% + 0.5rem);
-    left: 50%;
-    transform: translateX(-50%) scale(0.95);
-    background: var(--text-primary);
-    color: var(--text-inverse);
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--radius-md);
-    font-size: 0.875rem;
-    font-weight: 400;
-    white-space: normal;
-    width: 220px;
-    text-align: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: all var(--transition-base);
-    z-index: 1000;
-    box-shadow: var(--shadow-lg);
-}
-
-.tooltip::before {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 6px solid transparent;
-    border-top-color: var(--text-primary);
-}
-
-.tooltip-container:hover .tooltip {
-    opacity: 1;
-    transform: translateX(-50%) scale(1);
-}
-
-/* Button tooltips need different positioning */
-button.tooltip-container .tooltip {
-    width: 250px;
-}
-
-/* List item tooltips */
-.stop-list li.tooltip-container .tooltip {
-    width: 200px;
-    font-size: 0.8125rem;
-}
-
 /* FOOTER */
 .app-footer {
+    width: 100%;
     text-align: center;
     padding: var(--spacing-lg);
     color: var(--text-tertiary);
     font-size: 0.875rem;
     opacity: 0.6;
     transition: opacity var(--transition-base);
+    margin-top: auto;
 }
 
 .app-footer:hover {

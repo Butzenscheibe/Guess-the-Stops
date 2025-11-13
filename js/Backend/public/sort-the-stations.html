@@ -3,10 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Sort the train stations in order">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Sort the Stations - Arrange train stations in the correct order. A fun puzzle game to test your knowledge of train routes!">
+    <meta name="keywords" content="train stations, sort, puzzle, game, geography, Switzerland, Germany, educational game">
+    <meta name="author" content="DieButzenscheibe">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://yourdomain.com/sort-the-stations.html">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yourdomain.com/sort-the-stations.html">
+    <meta property="og:title" content="Sort the Stations - Train Station Puzzle Game">
+    <meta property="og:description" content="Can you arrange the train stations in the correct order? Test your knowledge of train routes!">
+    <meta property="og:image" content="https://yourdomain.com/og-image.png">
+    <meta property="og:site_name" content="Guess the Stations">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://yourdomain.com/sort-the-stations.html">
+    <meta name="twitter:title" content="Sort the Stations - Train Station Puzzle Game">
+    <meta name="twitter:description" content="Can you arrange the train stations in the correct order? Test your knowledge of train routes!">
+    <meta name="twitter:image" content="https://yourdomain.com/og-image.png">
+    
     <meta name="theme-color" content="#3b82f6">
-    <title>Sort the Stations</title>
+    <title>Sort the Stations - Train Station Puzzle Game</title>
     <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./cookie-consent.css">
+    
+    <!-- Google Analytics (GA4) with Consent Mode -->
+    <!-- Replace GA_MEASUREMENT_ID with your actual Google Analytics 4 Measurement ID -->
+    <script>
+        // Initialize consent mode before analytics loads
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        
+        // Set default consent to denied
+        gtag('consent', 'default', {
+            'analytics_storage': 'denied'
+        });
+        
+        gtag('js', new Date());
+        gtag('config', 'GA_MEASUREMENT_ID', {
+            'anonymize_ip': true
+        });
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Sort the Stations",
+        "description": "A train station sorting puzzle game",
+        "url": "https://yourdomain.com/sort-the-stations.html",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "author": {
+            "@type": "Person",
+            "name": "DieButzenscheibe",
+            "url": "https://diebutzenscheibe.dev"
+        }
+    }
+    </script>
     <script src="sort-the-stations.js"></script>
 </head>
 <body>  
@@ -22,5 +87,7 @@
             <button id="submit" class="submit">Submit Order</button>
         </div>
     </div>
+    
+    <script src="cookie-consent.js"></script>
 </body>
 </html>

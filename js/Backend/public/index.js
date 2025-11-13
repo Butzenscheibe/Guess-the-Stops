@@ -1,6 +1,52 @@
 let gameId;
 let country;
 let hintAmount = 0;
+let frontendTimer = null;
+let gameStartTime = null;
+
+// Dark mode functionality
+function initDarkMode() {
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const savedTheme = localStorage.getItem('theme');
+    
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+    }
+    
+    darkModeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+}
+
+// Initialize dark mode on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDarkMode);
+} else {
+    initDarkMode();
+}
+
+function startFrontendTimer() {
+    gameStartTime = Date.now();
+    frontendTimer = setInterval(() => {
+        const elapsed = Date.now() - gameStartTime;
+        const totalSeconds = Math.floor(elapsed / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        
+        const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        document.getElementById('time').innerText = `Time: ${timeStr}`;
+    }, 1000);
+}
+
+function stopFrontendTimer() {
+    if (frontendTimer) {
+        clearInterval(frontendTimer);
+        frontendTimer = null;
+    }
+}
 
 document.getElementById('country-button').addEventListener('click', function() {
     document.getElementById('game-setup-1').classList.add('hidden');
@@ -15,6 +61,8 @@ document.getElementById('difficulty-button').addEventListener('click', function(
     document.getElementById('share').classList.add('hidden');
     document.getElementById('save').classList.add('hidden');
 
+    // Start the frontend timer
+    startFrontendTimer();
 
     let difficulty = document.getElementById('difficulty-select').value;
     fetch('/start-game', {
@@ -275,6 +323,7 @@ document.getElementById('save-button').addEventListener('click', function() {
 
 });
 function afterGame() {
+    stopFrontendTimer();
     document.getElementById('user-input').classList.add('hidden');
     document.getElementById('submit-button').classList.add('hidden');
     document.getElementById('cancel-button').classList.add('hidden');

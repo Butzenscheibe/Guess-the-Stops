@@ -1,6 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const {v4: uuidv4} = require('uuid');
-const { Database, Train, GameTrain } = require('./game');
+const { Database, Train, GameTrain, prepareStop } = require('./game');
 
 const archiveDB = "../../database/games";
 let archiveGames = new Map();
@@ -72,6 +72,19 @@ class Game {
         let stops = await selectAllStops(tripId, this.db);
         if(stops.length <= 2){
             await this.startGame();
+            return;
+        }
+        this.amountOfStations = stops.length;
+        let trainName = await getTrainNameFromDB(routeId, this.country, this.db);
+        console.log('Train:', trainName);
+        this.train = new GameTrain(tripId, routeId, trainName, stops);
+        createArchiveGame(this.gameId, this);
+    }
+    async startGameWithSpecificStop(stop) {
+        let [tripId, routeId] = await selectRandTrainWithSpecificStop(this.country, this.db, stop);
+        let stops = await selectAllStops(tripId, this.db);
+        if(stops.length <= 2){
+            await this.startGameWithSpecificStop(stop);
             return;
         }
         this.amountOfStations = stops.length;
@@ -191,6 +204,41 @@ async function selectRandTrain(query, country, db) {
 
     return result;
 }
+async function selectRandTrainWithSpecificStop(country, db, stop) {
+    let result;
+    let query;
+    switch (country) {
+        case 'de':
+            query = "select trip_id, route_id from trips where route_id in (select route_id from routes where route_type = 2) and trip_id in (select trip_id from stop_times where stop_id = ? or stop_id in (select stop_id from stops where parent_station = ?)) order by random() limit 1;";
+            break;
+        case 'ch':
+            query = "select route_id from routes where route_desc in (select Abbr from transport_modes where Ref = 'Z' and Abbr not in ('TER','TGV','EXT','ZUG')) order by random() limit 1;";
+            break;
+        default:
+            throw new Error("Invalid country");
+    }
+    try {
+
+        result = await new Promise((resolve, reject) => {
+            db.get(query, [stop, stop], (err, row) => {
+                if (err) {
+                    console.log("TESTTEST")
+                    reject(err);
+                } else {
+                    if (row === undefined) {
+                        reject(new Error("No train found"));
+                    } else {
+                        resolve([row.trip_id, row.route_id]);
+                    
+                    }   
+                }
+            });
+        });
+    } catch (err) {
+        throw err;
+    }
+    return result;
+}
 async function selectAllStops(trainId, db) {
     let stops = [];
     let stopIdsSql = "SELECT stop_id FROM stop_times WHERE trip_id = ?";
@@ -239,6 +287,26 @@ async function createGame(country, difficulty, starttime) {
     games.set(gameId, game);
     console.log('Game created with ID:', gameId);
     await game.startGame();
+    return gameId;
+}
+async function createGameWithSpecificStop(country, starttime, stop) {
+    let gameId = createGameID();
+    let db_path = ''
+    switch (country) {
+        case 'de':
+            db_path = '../../database/german-db';
+            break;
+        case 'ch':
+            db_path = '../../database/timetable-gen';
+            break;
+        default:
+            throw new Error("Invalid country");
+    }
+    let db = new Database(db_path);
+    let game = new Game(gameId, country, 'easy', starttime, db.db);
+    games.set(gameId, game);
+    console.log('Game created with ID:', gameId);
+    await game.startGameWithSpecificStop(stop);
     return gameId;
 }
 function getGame(gameId) {
@@ -384,6 +452,35 @@ function insertSavedGameIntoDB(id, name, score){
     });
     db.close();
 }
+async function getStopID(stop){
+    let db = new sqlite3.Database('../../database/german-db', (err) => {
+        if (err) {
+            console.error(err.message);
+            reject(err);
+        }
+    });
+    let result = -1;
+    let sql = `SELECT parentFROM stops`;
+    db.all(sql, [], (err, rows) => {
+        if (err) {
+            console.error(err.message);
+            reject(err);
+        }
+        rows.forEach((row) => {
+            if (row === undefined) {
+                return result;
+            }
+            if (row.stopId === undefined) {
+                return result;
+            }
+            if(prepareStop(row.stop_id) === stop){
+                result = row.stop_id;
+            }
+        });
+    });
+    return result;
+
+}
 async function getTop(amount){
     if(!amount){
         amount = 10;
@@ -427,6 +524,7 @@ function getTime(gameId){
 }
 module.exports = {
     createGame,
+    createGameWithSpecificStop,
     checkStation,
     getGuessedStops,
     getTrainName,
@@ -444,5 +542,6 @@ module.exports = {
     updateIsRunning,
     isRunning,
     checkGame,
-    getTime
+    getTime,
+    getStopID
 };

@@ -7,6 +7,17 @@ document.getElementById('country-button').addEventListener('click', function() {
     document.getElementById('game-setup-2').classList.remove('hidden');
     country = document.getElementById('country-select').value;
 });
+document.getElementById('specific-station-button').addEventListener('click', function() {
+    document.getElementById('game-setup-1').classList.add('hidden');
+    document.getElementById('game-setup-spec').classList.remove('hidden');
+    console.log('specific station button clicked');
+});
+document.getElementById('specific-station-submit').addEventListener('click', function() {
+    let stop = document.getElementById('specific-station-input').value;
+    document.getElementById('game-setup-spec').classList.add('hidden');
+    startGameWithSpecificStop(stop, "de");
+});
+
 
 document.getElementById('difficulty-button').addEventListener('click', function() {
     document.getElementById('game-setup-2').classList.add('hidden');
@@ -343,3 +354,74 @@ function updateLeaderboard(){
 document.getElementById('sts-btn').addEventListener('click', function() {
     window.location.href = 'sort-the-stations.html';
 });
+function startGameWithSpecificStop(stop, country) {
+    document.getElementById('game-setup-1').classList.add('hidden');
+    document.getElementById('game-setup-2').classList.add('hidden');
+    document.getElementById('game-input').classList.remove('hidden');
+    document.getElementById('game-output').classList.remove('hidden');
+    document.getElementById('share').classList.add('hidden');
+    document.getElementById('save').classList.add('hidden');
+    fetch('/start-game-with-stop', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            country: country,
+            stop: stop,
+        })
+    })
+    .then(response => {
+        if(!response.ok) {
+            console.log('Error:', error);
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.result == false && data.result != undefined) {
+            alert('Station nicht gefunden');
+            location.reload();
+        }
+        gameId = data.gameId;
+        document.getElementById('game-input').classList.remove('hidden');
+        document.getElementById('game-output').classList.remove('hidden');
+        document.getElementById('share').classList.add('hidden');
+        document.getElementById('save').classList.add('hidden');
+        fetch('/get-train-name', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                gameId: gameId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('train-name').innerText = data.result;
+        });
+        fetch('/get-guessed-stops', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                gameId: gameId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.result) {
+                let guessedStops = data.result;
+                updateStationList(guessedStops);
+            }
+            let guessedStops = data.result;
+            updateStationList(guessedStops);
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        location.reload();
+    });
+}

@@ -1,6 +1,7 @@
 const express = require('express');
 const {
     createGame,
+    createGameWithSpecificStop,
     checkGame,
     checkStation,
     getHint,
@@ -17,8 +18,10 @@ const {
     getTop,
     getArchiveGameFromDB,
     isRunning,
-    getTime
+    getTime,
+    getStopID
 } = require('./gameManager');
+const {prepareStop} = require('./game');
 const sts = require('./sort-the-stations');
 const path = require('path');
 const app = express();
@@ -32,6 +35,18 @@ async function createGameMiddleware(req, res, next) {
     let gameID = await createGame(country, difficulty, starttime);
     req.gameID = gameID;
     next();
+}
+async function createGameWithSpecificStopMiddleware(req, res, next) {
+    let starttime = Date.now();
+    let country = req.body.country;
+    let stop = req.body.stop;
+    try {
+        let gameID = await createGameWithSpecificStop(country, starttime, stop);
+        req.gameID = gameID;
+        next();
+    } catch (error) {
+        res.json({result: false});
+    }
 }
 async function getArchiveGameMiddleware(req, res, next) {
     let gameID = req.body.gameId;
@@ -48,6 +63,9 @@ async function getArchiveGameMiddleware(req, res, next) {
 
 
 app.post('/start-game', createGameMiddleware, (req, res) => {
+    res.json({gameId: req.gameID});
+});
+app.post('/start-game-with-stop', createGameWithSpecificStopMiddleware, (req, res) => {
     res.json({gameId: req.gameID});
 });
 app.post('/check-station', (req, res) => {
@@ -69,6 +87,17 @@ app.post('/hint', (req, res) => {
         res.json({result: false});
     }
 });
+app.get('/get-stop-id', (req, res) => {
+    let stop = req.query.stop;
+    if (!stop) {
+        res.json({result: false});
+        return;
+    }
+    stop = prepareStop(stop);
+    let id = getStopID(stop);
+    res.json({result: id});
+});
+
 
 app.post('/check-win', (req, res) => {
     if(checkGame(req.body.gameId)) {

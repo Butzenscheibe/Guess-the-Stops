@@ -34,20 +34,23 @@ class GameTrain extends Train {
     }
 
     editStop() {
-        this.stops = this.stops.map(stop => {
-            stop = stop.replace(',', ' ');
-            stop = stop.replace(/Gl\.\d+ .*/, ' ');
-            stop = stop.replace(/-?>.*/, ' ');
-            stop = stop.replace(/[a-zA-Z]{3}stieg/, ' ');
-            stop = stop.replace(/Bstggl\.[0-9]/, ' ');
-            stop = stop.replace(/([MU]\d+\+*)+/, ' ');
-            stop = stop.replace(/\(.*\)/, ' ');
-            stop = stop.replace(/ +/, ' ');
-            stop = stop.replace(/ $/, '');
-            return stop;
-        });
+        this.stops = this.stops.map(stop => prepareStop(stop));
         this.stops = [...new Set(this.stops)]
     }
 }
+function prepareStop(stop){
+    stop = stop.replace(',', ' ');
+    stop = stop.replace('-', ' ');
+    stop = stop.replace("ß", "ss");
+    stop = stop.replace(/Gl\.\d+ .*/, ' ');
+    stop = stop.replace(/-?>.*/, ' ');
+    stop = stop.replace(/[a-zA-Z]{3}stieg/, ' ');
+    stop = stop.replace(/Bstggl\.[0-9]/, ' ');
+    stop = stop.replace(/([MU]\d+\+*)+/, ' ');
+    stop = stop.replace(/\(.*\)/, ' ');
+    stop = stop.replace(/ +/, ' ');
+    stop = stop.replace(/ $/, '');
+    return stop;
+}
 
-module.exports = { Database, Train, GameTrain };
+module.exports = { Database, Train, GameTrain, prepareStop };

@@ -1,0 +1,10 @@
+# robots.txt for Guess the Stations
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://yourdomain.com/sitemap.xml
+
+# Disallow logs and backend directories
+Disallow: /logs/
+Disallow: /database/

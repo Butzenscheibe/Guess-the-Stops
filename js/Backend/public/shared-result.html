@@ -3,10 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="View shared game results">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="View and share game results from Guess the Stations. See how well players performed on the train station quiz!">
+    <meta name="keywords" content="train stations, game results, quiz, leaderboard, share results">
+    <meta name="author" content="DieButzenscheibe">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://yourdomain.com/shared-result.html">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yourdomain.com/shared-result.html">
+    <meta property="og:title" content="Shared Result - Guess the Stations">
+    <meta property="og:description" content="Check out this game result from Guess the Stations!">
+    <meta property="og:image" content="https://yourdomain.com/og-image.png">
+    <meta property="og:site_name" content="Guess the Stations">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://yourdomain.com/shared-result.html">
+    <meta name="twitter:title" content="Shared Result - Guess the Stations">
+    <meta name="twitter:description" content="Check out this game result from Guess the Stations!">
+    <meta name="twitter:image" content="https://yourdomain.com/og-image.png">
+    
     <meta name="theme-color" content="#3b82f6">
     <title>Shared Result - Guess the Stations</title>
     <link rel="stylesheet" href="./style.css">
+    
+    <!-- Google Analytics (GA4) -->
+    <!-- Replace GA_MEASUREMENT_ID with your actual Google Analytics 4 Measurement ID -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'GA_MEASUREMENT_ID');
+    </script>
+    
     <script src="shared-result.js"></script>
 </head>
 <body>

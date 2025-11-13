@@ -21,7 +21,12 @@ const {
 } = require('./gameManager');
 const sts = require('./sort-the-stations');
 const path = require('path');
+const { ipLoggerMiddleware } = require('./ipLogger');
 const app = express();
+
+// IP logging middleware - logs all requests
+app.use(ipLoggerMiddleware);
+
 app.use(express.json()); 
 app.use(express.static(path.join(__dirname, 'public')));
 

@@ -1,23 +1,33 @@
-/* Modern Design - CSS Reset & Variables */
+/* RADICAL TRAIN STATION THEME - Dark Mode with Neon Accents */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap');
+
 :root {
-    /* Modern Color Palette */
-    --primary-color: #6366f1;
-    --primary-hover: #4f46e5;
-    --primary-light: #818cf8;
-    --secondary-color: #8b5cf6;
-    --accent-color: #ec4899;
-    --success-color: #10b981;
-    --danger-color: #ef4444;
-    --warning-color: #f59e0b;
+    /* Dark Railway Theme Colors */
+    --bg-dark: #0a0e1a;
+    --bg-darker: #050810;
+    --bg-card: #151b2e;
+    --bg-card-hover: #1a2238;
     
-    /* Neutral Colors */
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-card: #ffffff;
-    --text-primary: #1e293b;
-    --text-secondary: #64748b;
-    --text-light: #94a3b8;
-    --border-color: #e2e8f0;
+    /* Neon Railway Colors */
+    --neon-yellow: #ffd93d;
+    --neon-cyan: #00f0ff;
+    --neon-pink: #ff006e;
+    --neon-green: #39ff14;
+    --neon-orange: #ff6b35;
+    
+    /* Railway Signal Colors */
+    --signal-go: #39ff14;
+    --signal-warning: #ffd93d;
+    --signal-stop: #ff006e;
+    
+    /* Text Colors */
+    --text-primary: #ffffff;
+    --text-secondary: #a0aec0;
+    --text-muted: #4a5568;
+    
+    /* Track Colors */
+    --track-metal: #718096;
+    --track-wood: #8b4513;
     
     /* Spacing */
     --spacing-xs: 0.5rem;
@@ -26,18 +36,10 @@
     --spacing-lg: 2rem;
     --spacing-xl: 3rem;
     
-    /* Border Radius */
-    --radius-sm: 0.5rem;
-    --radius-md: 1rem;
-    --radius-lg: 1.5rem;
-    --radius-xl: 2rem;
-    
-    /* Shadows */
-    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+    /* Effects */
+    --glow-neon: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+    --shadow-deep: 0 10px 40px rgba(0, 0, 0, 0.8);
+    --shadow-platform: 0 4px 20px rgba(0, 240, 255, 0.3);
 }
 
 * {
@@ -47,21 +49,15 @@
 }
 
 body {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: var(--spacing-lg) var(--spacing-md);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    background-attachment: fixed;
-    font-size: 16px;
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--bg-darker);
+    color: var(--text-primary);
     min-height: 100vh;
     overflow-x: hidden;
-    line-height: 1.6;
-    color: var(--text-primary);
+    position: relative;
 }
 
-/* Add animated background pattern */
+/* Animated Railroad Background */
 body::before {
     content: '';
     position: fixed;
@@ -69,345 +65,534 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: 
-        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    background: 
+        linear-gradient(90deg, transparent 0%, transparent 48%, var(--track-metal) 48%, var(--track-metal) 50%, transparent 50%, transparent 98%, var(--track-metal) 98%),
+        linear-gradient(180deg, var(--bg-darker) 0%, var(--bg-dark) 50%, var(--bg-darker) 100%);
+    opacity: 0.3;
     pointer-events: none;
     z-index: 0;
+}
+
+/* Animated neon scanline effect */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+    animation: scanline 3s linear infinite;
+    z-index: 1;
+    pointer-events: none;
+}
+
+@keyframes scanline {
+    0% { transform: translateY(0); opacity: 0; }
+    50% { opacity: 0.5; }
+    100% { transform: translateY(100vh); opacity: 0; }
 }
 
 .hidden {
     display: none !important;
 }
 
-/* Modern Container Styles */
+/* MAIN CONTAINER - Train Platform Style */
 .game-container {
-    background: var(--bg-card);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-xl) var(--spacing-lg);
-    margin: var(--spacing-md);
-    box-shadow: var(--shadow-xl);
-    max-width: 600px;
-    width: 100%;
-    max-height: 85vh;
-    overflow-y: auto;
     position: relative;
-    z-index: 1;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: var(--bg-card);
+    border: 2px solid var(--track-metal);
+    border-radius: 0;
+    margin: var(--spacing-lg);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-deep), inset 0 0 50px rgba(0, 240, 255, 0.05);
+    max-width: 900px;
+    width: calc(100% - 4rem);
+    position: relative;
+    z-index: 2;
+    clip-path: polygon(
+        0 0, 
+        calc(100% - 20px) 0, 
+        100% 20px, 
+        100% 100%, 
+        20px 100%, 
+        0 calc(100% - 20px)
+    );
 }
 
-.game-container:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-xl), var(--shadow-glow);
+/* Corner rivets effect */
+.game-container::before,
+.game-container::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle, var(--track-metal) 30%, var(--bg-darker) 70%);
+    border-radius: 50%;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+    z-index: 10;
 }
 
-/* Custom scrollbar for containers */
-.game-container::-webkit-scrollbar {
-    width: 8px;
+.game-container::before {
+    top: 10px;
+    left: 10px;
 }
 
-.game-container::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 10px;
+.game-container::after {
+    bottom: 10px;
+    right: 10px;
 }
 
-.game-container::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
-    border-radius: 10px;
+/* Station Board Layout */
+body {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    align-items: start;
+    justify-content: center;
 }
 
-.game-container::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-hover);
+@media (min-width: 1200px) {
+    body {
+        grid-template-columns: 1.5fr 1fr;
+        max-width: 1800px;
+        margin: 0 auto;
+    }
 }
 
-.no-max-width {
-    max-width: none;
-}
-
-/* Typography */
+/* TYPOGRAPHY - Digital Display Style */
 h1 {
-    font-size: 2.5rem;
-    font-weight: 800;
-    margin-bottom: var(--spacing-lg);
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.3rem;
+    color: var(--neon-cyan);
+    text-shadow: var(--glow-neon);
+    margin-bottom: var(--spacing-xl);
     text-align: center;
-    letter-spacing: -0.5px;
+    position: relative;
+    padding-bottom: var(--spacing-md);
+}
+
+h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+    box-shadow: 0 0 10px var(--neon-cyan);
 }
 
 h2 {
-    font-size: 1.875rem;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.8rem;
     font-weight: 700;
+    color: var(--neon-yellow);
+    text-shadow: 0 0 10px var(--neon-yellow);
     margin-bottom: var(--spacing-md);
-    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.2rem;
 }
 
 h3 {
-    font-size: 1.25rem;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.3rem;
     font-weight: 600;
-    margin-bottom: var(--spacing-sm);
     color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+    text-transform: uppercase;
 }
 
 p {
-    margin-bottom: var(--spacing-sm);
+    font-size: 1.1rem;
     color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.6;
 }
 
-/* Navbar Styles */
-#navbar {
-    position: fixed;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: var(--shadow-md);
-    top: 0;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    padding: var(--spacing-md);
-    width: 100%;
-    z-index: 1000;
-    border-bottom: 1px solid var(--border-color);
-}
-
-a {
-    color: var(--primary-color);
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.3s ease;
-}
-
-a:hover {
-    color: var(--primary-hover);
-}
-
-/* Form Styles */
+/* FORM ELEMENTS - Ticket Machine Style */
 label {
     display: block;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--neon-yellow);
+    text-transform: uppercase;
+    letter-spacing: 0.1rem;
     margin-bottom: var(--spacing-xs);
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 0.95rem;
+    text-shadow: 0 0 5px var(--neon-yellow);
 }
 
-select, input[type="text"] {
+select,
+input[type="text"] {
     width: 100%;
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--radius-md);
-    border: 2px solid var(--border-color);
+    padding: var(--spacing-md);
+    background: var(--bg-darker);
+    border: 2px solid var(--track-metal);
+    border-radius: 0;
+    color: var(--neon-cyan);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
     margin-bottom: var(--spacing-md);
-    font-size: 1rem;
-    background-color: #f8fafc;
-    font-family: inherit;
     transition: all 0.3s ease;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+    text-transform: uppercase;
 }
 
 select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236366f1' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300f0ff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 1rem center;
     padding-right: 3rem;
+    appearance: none;
 }
 
-select:focus, input[type="text"]:focus {
+select:focus,
+input[type="text"]:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-    background-color: #ffffff;
+    border-color: var(--neon-cyan);
+    box-shadow: 
+        inset 0 2px 10px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(0, 240, 255, 0.5);
+    text-shadow: 0 0 5px var(--neon-cyan);
+}
+
+select option {
+    background: var(--bg-card);
+    color: var(--text-primary);
 }
 
 .correct {
-    color: var(--success-color);
-    font-weight: 600;
+    color: var(--signal-go);
+    font-weight: 700;
+    text-shadow: 0 0 10px var(--signal-go);
 }
 
-/* Modern Button Styles */
+/* BUTTONS - Railway Signal Style */
 button {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-md);
-    padding: var(--spacing-sm) var(--spacing-lg);
+    font-family: 'Orbitron', sans-serif;
+    background: linear-gradient(135deg, var(--bg-card), var(--bg-darker));
+    color: var(--neon-cyan);
+    border: 2px solid var(--neon-cyan);
+    padding: var(--spacing-md) var(--spacing-lg);
     margin: var(--spacing-xs);
     cursor: pointer;
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15rem;
     transition: all 0.3s ease;
-    box-shadow: var(--shadow-sm);
-    font-family: inherit;
     position: relative;
     overflow: hidden;
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+    box-shadow: 
+        0 0 10px rgba(0, 240, 255, 0.3),
+        inset 0 0 10px rgba(0, 240, 255, 0.1);
 }
 
 button::before {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.4), transparent);
+    transition: left 0.5s ease;
 }
 
 button:hover::before {
-    width: 300px;
-    height: 300px;
+    left: 100%;
 }
 
 button:hover {
+    background: var(--bg-card-hover);
+    box-shadow: 
+        0 0 20px var(--neon-cyan),
+        inset 0 0 20px rgba(0, 240, 255, 0.2);
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    text-shadow: 0 0 10px var(--neon-cyan);
 }
 
 button:active {
     transform: translateY(0);
 }
 
+/* Button Variations */
 #cancel-button {
-    background: linear-gradient(135deg, var(--danger-color), #dc2626);
+    border-color: var(--signal-stop);
+    color: var(--signal-stop);
+    box-shadow: 
+        0 0 10px rgba(255, 0, 110, 0.3),
+        inset 0 0 10px rgba(255, 0, 110, 0.1);
+}
+
+#cancel-button:hover {
+    box-shadow: 
+        0 0 20px var(--signal-stop),
+        inset 0 0 20px rgba(255, 0, 110, 0.2);
+    text-shadow: 0 0 10px var(--signal-stop);
 }
 
 #hint {
-    background: linear-gradient(135deg, var(--warning-color), #d97706);
+    border-color: var(--signal-warning);
+    color: var(--signal-warning);
+    box-shadow: 
+        0 0 10px rgba(255, 217, 61, 0.3),
+        inset 0 0 10px rgba(255, 217, 61, 0.1);
 }
 
-#save {
-    background: linear-gradient(135deg, var(--success-color), #059669);
+#hint:hover {
+    box-shadow: 
+        0 0 20px var(--signal-warning),
+        inset 0 0 20px rgba(255, 217, 61, 0.2);
+    text-shadow: 0 0 10px var(--signal-warning);
+}
+
+#save,
+#submit-button,
+#difficulty-button,
+#country-button {
+    border-color: var(--signal-go);
+    color: var(--signal-go);
+    box-shadow: 
+        0 0 10px rgba(57, 255, 20, 0.3),
+        inset 0 0 10px rgba(57, 255, 20, 0.1);
+}
+
+#save:hover,
+#submit-button:hover,
+#difficulty-button:hover,
+#country-button:hover {
+    box-shadow: 
+        0 0 20px var(--signal-go),
+        inset 0 0 20px rgba(57, 255, 20, 0.2);
+    text-shadow: 0 0 10px var(--signal-go);
 }
 
 #share {
-    background: linear-gradient(135deg, var(--secondary-color), #7c3aed);
+    border-color: var(--neon-pink);
+    color: var(--neon-pink);
+    box-shadow: 
+        0 0 10px rgba(255, 0, 110, 0.3),
+        inset 0 0 10px rgba(255, 0, 110, 0.1);
 }
 
-/* List Styles */
+#share:hover {
+    box-shadow: 
+        0 0 20px var(--neon-pink),
+        inset 0 0 20px rgba(255, 0, 110, 0.2);
+    text-shadow: 0 0 10px var(--neon-pink);
+}
+
+/* STATION LIST - Digital Display Board */
 .stop-list {
     list-style: none;
     padding: 0;
-    margin: 0;
-    max-height: 40vh;
-    overflow-y: auto;
+    margin: var(--spacing-md) 0;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: var(--spacing-sm);
+    max-height: 50vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.stop-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.stop-list::-webkit-scrollbar-track {
+    background: var(--bg-darker);
+    border: 1px solid var(--track-metal);
+}
+
+.stop-list::-webkit-scrollbar-thumb {
+    background: var(--neon-cyan);
+    box-shadow: 0 0 10px var(--neon-cyan);
 }
 
 .stop-list li {
-    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    background: var(--bg-darker);
+    border: 1px solid var(--track-metal);
+    border-left: 4px solid var(--neon-cyan);
     padding: var(--spacing-md);
-    border-radius: var(--radius-md);
-    border-left: 4px solid var(--primary-color);
-    box-shadow: var(--shadow-sm);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--neon-yellow);
+    text-transform: uppercase;
+    letter-spacing: 0.1rem;
+    position: relative;
     transition: all 0.3s ease;
-    font-weight: 500;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+}
+
+.stop-list li::before {
+    content: '▸';
+    position: absolute;
+    left: 8px;
+    color: var(--neon-cyan);
+    animation: blink 2s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
 }
 
 .stop-list li:hover {
+    background: var(--bg-card-hover);
+    border-left-width: 6px;
     transform: translateX(5px);
-    box-shadow: var(--shadow-md);
+    box-shadow: 
+        0 0 15px rgba(0, 240, 255, 0.3),
+        inset 0 0 15px rgba(0, 240, 255, 0.1);
+    text-shadow: 0 0 5px var(--neon-yellow);
 }
 
+/* LEADERBOARD - Departure Board Style */
 #leaderboard {
-    max-height: 100vh;
-    overflow-y: auto;
     grid-template-columns: 1fr;
+    max-height: 70vh;
 }
 
 #leaderboard li {
-    background: linear-gradient(135deg, #ffffff, #f8fafc);
-    border-left: 4px solid var(--accent-color);
+    border-left-color: var(--neon-pink);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md) var(--spacing-lg);
 }
 
 #leaderboard li a {
-    display: block;
-    padding: var(--spacing-xs);
-}
-
-#sortable-list {
-    list-style-type: none;
-}
-
-#sortable-list li {
-    margin: var(--spacing-sm) 0;
-    padding: var(--spacing-md);
-    border: 2px dashed var(--border-color);
-    border-radius: var(--radius-md);
-    cursor: move;
-    background: #ffffff;
+    color: var(--neon-yellow);
+    text-decoration: none;
     transition: all 0.3s ease;
+    flex: 1;
+    text-shadow: 0 0 5px var(--neon-yellow);
 }
 
-#sortable-list li:hover {
-    border-color: var(--primary-color);
-    box-shadow: var(--shadow-md);
+#leaderboard li:hover a {
+    color: var(--neon-cyan);
+    text-shadow: 0 0 10px var(--neon-cyan);
 }
 
-#game-sort {
-    max-height: 50vh;
-    column-gap: normal;
-    row-gap: var(--spacing-sm);
-    font-size: 1rem;
+/* GAME OUTPUT - Train Status Display */
+#game-output {
+    background: var(--bg-darker);
+    border: 2px solid var(--neon-cyan);
+    border-radius: 0;
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-md);
+    box-shadow: 
+        0 0 20px rgba(0, 240, 255, 0.3),
+        inset 0 0 30px rgba(0, 240, 255, 0.05);
+    position: relative;
 }
 
+#game-output::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, transparent 48%, var(--neon-cyan) 48%, var(--neon-cyan) 52%, transparent 52%);
+    background-size: 10px 10px;
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+#result {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 900;
+    text-align: center;
+    padding: var(--spacing-lg);
+    margin: var(--spacing-md) 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3rem;
+    background: var(--bg-card);
+    border: 2px solid var(--neon-yellow);
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 10px var(--neon-yellow);
+    }
+    50% {
+        box-shadow: 0 0 25px var(--neon-yellow);
+    }
+}
+
+#score,
+#time {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 5px var(--neon-cyan);
+}
+
+/* SORTABLE STATIONS */
 .stations {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: var(--spacing-sm);
+    margin: var(--spacing-md) 0;
 }
 
 .stop {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background: var(--bg-darker);
+    border: 2px solid var(--track-metal);
     padding: var(--spacing-md);
-    border: 2px solid var(--border-color);
-    border-radius: var(--radius-md);
-    background: linear-gradient(135deg, #ffffff, #f8fafc);
+    text-align: center;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 600;
+    color: var(--neon-yellow);
     transition: all 0.3s ease;
-    font-weight: 500;
-    box-shadow: var(--shadow-sm);
+    position: relative;
+    clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
 }
 
 .stop:hover {
-    border-color: var(--primary-color);
-    box-shadow: var(--shadow-md);
-    transform: scale(1.02);
+    background: var(--bg-card-hover);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+    transform: scale(1.05);
 }
 
 .stop-moveable {
     cursor: move;
     border-style: dashed;
+    border-color: var(--neon-pink);
 }
 
 .stop-moveable:hover {
-    background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 20px var(--neon-cyan);
 }
 
-.sts-container {
-    max-width: 900px;
-    width: 100%;
-    display: grid;
-    grid-template-rows: max-content max-content max-content;
-    gap: var(--spacing-lg);
-}
-
-.larger {
-    font-size: 1.125rem;
-    padding: var(--spacing-sm);
-}
-
-/* Game Setup Sections */
-#game-setup-1, #game-setup-2, #game-input, #save-input {
-    animation: fadeIn 0.5s ease;
+/* ANIMATIONS */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 @keyframes fadeIn {
@@ -421,111 +606,159 @@ button:active {
     }
 }
 
-/* Result Display */
+#game-setup-1,
+#game-setup-2,
+#game-input,
+#save-input {
+    animation: fadeIn 0.6s ease;
+}
+
 #game-output {
-    animation: slideIn 0.5s ease;
-    background: linear-gradient(135deg, #f8fafc, #ffffff);
-    padding: var(--spacing-lg);
-    border-radius: var(--radius-lg);
-    margin-top: var(--spacing-md);
+    animation: slideIn 0.6s ease;
 }
 
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-#result {
-    font-size: 1.25rem;
-    font-weight: 700;
-    text-align: center;
-    padding: var(--spacing-md);
-    border-radius: var(--radius-md);
-    margin: var(--spacing-md) 0;
-}
-
-/* Responsive Design - Mobile First */
-@media (max-width: 640px) {
+/* RESPONSIVE DESIGN */
+@media (max-width: 768px) {
     body {
         padding: var(--spacing-sm);
-        font-size: 14px;
+        grid-template-columns: 1fr;
     }
-
-    h1 {
-        font-size: 1.875rem;
-    }
-
-    h2 {
-        font-size: 1.5rem;
-    }
-
+    
     .game-container {
-        padding: var(--spacing-lg) var(--spacing-md);
         margin: var(--spacing-sm);
-        max-height: none;
+        padding: var(--spacing-lg);
+        width: calc(100% - 2rem);
     }
-
+    
+    h1 {
+        font-size: 2rem;
+        letter-spacing: 0.2rem;
+    }
+    
+    h2 {
+        font-size: 1.3rem;
+    }
+    
     button {
         width: 100%;
         margin: var(--spacing-xs) 0;
     }
-
+    
     .stop-list {
         grid-template-columns: 1fr;
         max-height: none;
     }
-
+    
     .stations {
         grid-template-columns: 1fr;
     }
-
-    .sts-container {
-        width: 100%;
-    }
 }
 
-@media (min-width: 641px) and (max-width: 1024px) {
-    .game-container {
-        max-width: 700px;
-    }
-
+@media (min-width: 769px) and (max-width: 1199px) {
     .stop-list {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     }
-
-    .stations {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    }
 }
 
-@media (min-width: 1025px) {
-    body {
-        align-items: center;
-    }
-
-    .stop-list {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    }
-}
-
-/* Print Styles */
+/* PRINT STYLES */
 @media print {
-    body {
-        background: white;
+    body::before,
+    body::after {
+        display: none;
     }
-
+    
     .game-container {
+        border: 2px solid #000;
         box-shadow: none;
-        border: 1px solid #000;
     }
-
+    
     button {
         display: none;
     }
+}
+
+/* BUTTON GRID LAYOUT */
+.button-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.button-grid button {
+    margin: 0;
+}
+
+/* STATS GRID */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+    margin: var(--spacing-md) 0;
+    padding: var(--spacing-md);
+    background: var(--bg-darker);
+    border: 1px solid var(--track-metal);
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+
+.stats-grid p {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 5px var(--neon-cyan);
+    text-align: center;
+    margin: 0;
+}
+
+/* ADDITIONAL MOBILE OPTIMIZATIONS */
+@media (max-width: 768px) {
+    .button-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+}
+
+/* SHARED RESULTS LAYOUT */
+#stop-div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+#stop-div > div {
+    background: var(--bg-darker);
+    padding: var(--spacing-md);
+    border: 1px solid var(--track-metal);
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+
+@media (max-width: 768px) {
+    #stop-div {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* STS CONTAINER SPECIFIC */
+.sts-container {
+    max-width: 900px;
+}
+
+.sts-title h2 {
+    text-align: center;
+}
+
+.sts-desc {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.sts-desc p {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
 }

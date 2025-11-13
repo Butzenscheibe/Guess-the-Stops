@@ -1,59 +1,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Guess the train stations in Switzerland and Germany - A fun and educational game">
-    <title>Guess the Stations!</title>
+    <meta name="description" content="Guess the train stations in Switzerland and Germany - A cyberpunk railway game">
+    <meta name="theme-color" content="#0a0e1a">
+    <title>🚂 STATION GUESSER - Railway Terminal</title>
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
     <div class="game-container">
-        <h1>Guess the Stations!</h1>
+        <h1>🚂 Station Guesser</h1>
+        
         <div id="game-setup-1">
-            <label for="country-select">Land auswählen:</label>
+            <label for="country-select">🗺️ Select Country:</label>
             <select id="country-select">
-                <option value="ch">Schweiz</option>
-                <option value="de">Deutschland</option>
+                <option value="ch">🇨🇭 Schweiz</option>
+                <option value="de">🇩🇪 Deutschland</option>
             </select>
-            <button id="country-button">Weiter</button>
+            <button id="country-button">▶ Continue</button>
         </div>
+        
         <div id="game-setup-2" class="hidden">
-            <label for="difficulty-select">Schwierigkeitsgrad auswählen:</label>
+            <label for="difficulty-select">⚡ Difficulty Level:</label>
             <select id="difficulty-select">
-                <option value="easy">Leicht</option>
-                <option value="medium">Mittel</option>
-                <option value="hard">Schwer</option>
+                <option value="easy">🟢 Easy - InterCity</option>
+                <option value="medium">🟡 Medium - Regional</option>
+                <option value="hard">🔴 Hard - S-Bahn</option>
             </select>
-            <button id="difficulty-button">Spiel starten</button>
+            <button id="difficulty-button">🚀 Start Game</button>
         </div>
+        
         <div id="game-input" class="hidden">
-            <label for="user-input">Gib hier deine Versuche an:</label>
-            <input type="text" id="user-input">
-            <button id="submit-button">Absenden</button>
-            <button type="button" id="cancel-button">Abbruch</button>
-            <button type="button" id="restart-button">Neustarten</button>
-            <button type="button" id="hint">Tipp (-20% des Scores)</button>
-            <button type="button" id="share">Teilen</button>
-            <button type="button" id="save">Ergebnis Speichern</button>
+            <label for="user-input">📍 Enter Station Name:</label>
+            <input type="text" id="user-input" placeholder="Type station name...">
+            <div class="button-grid">
+                <button id="submit-button">✓ Submit</button>
+                <button type="button" id="hint">💡 Hint (-20%)</button>
+                <button type="button" id="cancel-button">✖ Cancel</button>
+                <button type="button" id="restart-button">🔄 Restart</button>
+                <button type="button" id="share">🔗 Share</button>
+                <button type="button" id="save">💾 Save</button>
+            </div>
         </div>
+        
         <div id="save-input" class="hidden">
-            <h2>Speichern</h2>
-            <label for="name">Name:</label>
-            <input type="text" id="save-name">
-            <button id="save-button">Speichern</button>
+            <h2>💾 Save Result</h2>
+            <label for="name">👤 Your Name:</label>
+            <input type="text" id="save-name" placeholder="Enter your name...">
+            <button id="save-button">✓ Save Score</button>
         </div>
+        
         <div id="game-output" class="hidden">
-            <h2 id="train-name"></h2>
-            <p id="score"></p>
-            <p id="time"></p>
-            <p id="result"></p>
-            <ul id="stop-list" class="stop-list">
-            </ul>
+            <h2 id="train-name">🚆 Loading...</h2>
+            <div class="stats-grid">
+                <p id="score">🎯 Score: --</p>
+                <p id="time">⏱️ Time: --:--:--</p>
+            </div>
+            <p id="result">⏳ Waiting...</p>
+            <ul id="stop-list" class="stop-list"></ul>
         </div>
     </div>
+    
     <div class="game-container" id="highscores">
-        <h1>Highscores</h1>
-        <ul id="leaderboard" class="stop-list">
-        </ul>
+        <h1>🏆 Top Scores</h1>
+        <ul id="leaderboard" class="stop-list"></ul>
     </div>
+    
     <script src="index.js"></script>
 </body>

@@ -4,6 +4,90 @@ let hintAmount = 0;
 let frontendTimer = null;
 let gameStartTime = null;
 
+// Custom Dropdown Component
+function initCustomSelects() {
+    const selects = document.querySelectorAll('select');
+    
+    selects.forEach(select => {
+        // Skip if already converted
+        if (select.parentElement.classList.contains('custom-select')) return;
+        
+        const wrapper = document.createElement('div');
+        wrapper.className = 'custom-select';
+        select.parentNode.insertBefore(wrapper, select);
+        wrapper.appendChild(select);
+        
+        const styled = document.createElement('div');
+        styled.className = 'select-styled';
+        styled.textContent = select.options[select.selectedIndex].text;
+        wrapper.appendChild(styled);
+        
+        const optionsList = document.createElement('ul');
+        optionsList.className = 'select-options';
+        
+        Array.from(select.options).forEach((option, index) => {
+            const li = document.createElement('li');
+            li.textContent = option.text;
+            li.setAttribute('data-value', option.value);
+            if (index === select.selectedIndex) {
+                li.classList.add('selected');
+            }
+            optionsList.appendChild(li);
+        });
+        
+        wrapper.appendChild(optionsList);
+        
+        // Toggle dropdown
+        styled.addEventListener('click', function(e) {
+            e.stopPropagation();
+            // Close all other dropdowns
+            document.querySelectorAll('.select-styled.active').forEach(other => {
+                if (other !== styled) {
+                    other.classList.remove('active');
+                    other.nextElementSibling.classList.remove('active');
+                }
+            });
+            styled.classList.toggle('active');
+            optionsList.classList.toggle('active');
+        });
+        
+        // Select option
+        optionsList.querySelectorAll('li').forEach(li => {
+            li.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const value = this.getAttribute('data-value');
+                const text = this.textContent;
+                
+                // Update native select
+                select.value = value;
+                
+                // Trigger change event on native select
+                const event = new Event('change', { bubbles: true });
+                select.dispatchEvent(event);
+                
+                // Update styled select
+                styled.textContent = text;
+                
+                // Update selected class
+                optionsList.querySelectorAll('li').forEach(item => item.classList.remove('selected'));
+                this.classList.add('selected');
+                
+                // Close dropdown
+                styled.classList.remove('active');
+                optionsList.classList.remove('active');
+            });
+        });
+    });
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.select-styled.active').forEach(styled => {
+            styled.classList.remove('active');
+            styled.nextElementSibling.classList.remove('active');
+        });
+    });
+}
+
 // Dark mode functionality
 function initDarkMode() {
     const darkModeToggle = document.getElementById('dark-mode-toggle');
@@ -20,11 +104,15 @@ function initDarkMode() {
     });
 }
 
-// Initialize dark mode on page load
+// Initialize on page load
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initDarkMode);
+    document.addEventListener('DOMContentLoaded', () => {
+        initDarkMode();
+        initCustomSelects();
+    });
 } else {
     initDarkMode();
+    initCustomSelects();
 }
 
 function startFrontendTimer() {

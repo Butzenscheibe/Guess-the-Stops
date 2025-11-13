@@ -102,9 +102,21 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: var(--spacing-xl) var(--spacing-md);
-    gap: var(--spacing-xl);
+    padding: var(--spacing-xl) var(--spacing-md) var(--spacing-md);
+    gap: 0;
     position: relative;
+}
+
+/* Main content wrapper for game containers */
+.content-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xl);
+    width: 100%;
+    max-width: 1400px;
+    flex: 1;
+    padding-bottom: var(--spacing-xl);
 }
 
 body.dark-mode {
@@ -160,11 +172,10 @@ body.dark-mode .dark-mode-toggle .moon-icon {
 }
 
 @media (min-width: 1024px) {
-    body {
+    .content-wrapper {
         flex-direction: row;
         align-items: flex-start;
         justify-content: center;
-        padding: var(--spacing-2xl);
     }
 }
 
@@ -315,6 +326,181 @@ body.dark-mode select option:hover {
 body.dark-mode select option:checked {
     background-color: var(--primary);
     color: var(--text-inverse);
+}
+
+/* CUSTOM DROPDOWN COMPONENT */
+.custom-select {
+    position: relative;
+    width: 100%;
+    margin-bottom: var(--spacing-lg);
+}
+
+.custom-select select {
+    display: none; /* Hide native select */
+}
+
+.select-styled {
+    position: relative;
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md) var(--spacing-xl);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.select-styled::after {
+    content: '';
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%) rotate(0deg);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid var(--primary);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.select-styled.active::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.select-styled:hover {
+    border-color: var(--primary-light);
+    background: var(--bg-secondary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.select-styled.active {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.select-options {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    right: 0;
+    background: var(--bg-primary);
+    border: 2px solid var(--primary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+}
+
+.select-options.active {
+    max-height: 300px;
+    opacity: 1;
+    transform: translateY(0);
+    overflow-y: auto;
+}
+
+.select-options li {
+    padding: var(--spacing-md) var(--spacing-xl);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-weight: 500;
+    color: var(--text-primary);
+    position: relative;
+    overflow: hidden;
+}
+
+.select-options li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--primary);
+    transform: scaleY(0);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.select-options li:hover {
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
+    color: var(--primary);
+    padding-left: calc(var(--spacing-xl) + 0.5rem);
+}
+
+.select-options li:hover::before {
+    transform: scaleY(1);
+}
+
+.select-options li.selected {
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%);
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.select-options li:active {
+    transform: scale(0.98);
+}
+
+/* Staggered animation for dropdown items */
+.select-options.active li {
+    animation: slideInLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+
+.select-options.active li:nth-child(1) { animation-delay: 0.05s; }
+.select-options.active li:nth-child(2) { animation-delay: 0.1s; }
+.select-options.active li:nth-child(3) { animation-delay: 0.15s; }
+.select-options.active li:nth-child(4) { animation-delay: 0.2s; }
+.select-options.active li:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Dark mode custom dropdown */
+body.dark-mode .select-styled {
+    background: var(--surface);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .select-styled::after {
+    border-top-color: var(--primary-light);
+}
+
+body.dark-mode .select-options {
+    background: var(--surface);
+    border-color: var(--primary-light);
+}
+
+body.dark-mode .select-options li {
+    color: var(--text-primary);
+}
+
+body.dark-mode .select-options li:hover {
+    background: linear-gradient(90deg, rgba(96, 165, 250, 0.15) 0%, transparent 100%);
+    color: var(--primary-light);
+}
+
+body.dark-mode .select-options li.selected {
+    background: linear-gradient(90deg, rgba(96, 165, 250, 0.2) 0%, rgba(96, 165, 250, 0.08) 100%);
+    color: var(--primary-light);
 }
 
 input[type="text"]::placeholder {
@@ -763,13 +949,14 @@ button:disabled {
 /* FOOTER */
 .app-footer {
     width: 100%;
+    max-width: 1400px;
     text-align: center;
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md) var(--spacing-lg);
     color: var(--text-tertiary);
     font-size: 0.875rem;
     opacity: 0.6;
     transition: opacity var(--transition-base);
-    margin-top: auto;
+    margin-top: 0;
 }
 
 .app-footer:hover {

@@ -149,5 +149,30 @@ Create a 1200x630px image for social media previews and save it as `public/og-im
 
 - The IP logger middleware is placed early in the middleware chain to capture all requests
 - Logs are excluded from version control via `.gitignore`
-- Consider implementing rate limiting to prevent abuse
 - Regularly review and clean up old logs
+
+### Rate Limiting Recommendation
+
+⚠️ **Important**: This application currently does not implement rate limiting. For production deployments, it's strongly recommended to add rate limiting to prevent abuse and DDoS attacks.
+
+You can implement rate limiting using the `express-rate-limit` package:
+
+1. Install the package:
+```bash
+npm install express-rate-limit
+```
+
+2. Add to your `index.js` after the IP logger:
+```javascript
+const rateLimit = require('express-rate-limit');
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later.'
+});
+
+app.use(limiter);
+```
+
+The IP logs can help you identify patterns of abuse and adjust rate limiting rules accordingly.

@@ -346,7 +346,18 @@ function updateStationList(stations) {
     guessedStopsList.innerHTML = '';
     stations.forEach(stop => {
         let li = document.createElement('li');
-        li.innerText = stop;
+        
+        // Check if station contains X's (hidden station)
+        if (stop.includes('X')) {
+            li.classList.add('tooltip-container');
+            li.innerHTML = `
+                ${stop}
+                <span class="tooltip">Each X represents one letter in the station name. Try to guess the complete name!</span>
+            `;
+        } else {
+            li.innerText = stop;
+        }
+        
         guessedStopsList.appendChild(li);
     });
 }
@@ -364,7 +375,11 @@ function updateScore() {
         .then(data => {
             let score = data.result.score;
             let unDeducedScore = data.result.unDeducedScore;
-            document.getElementById('score').innerText = score + ' Punkte (' + unDeducedScore + ' Punkte ohne Abzüge)';
+            const scoreElement = document.getElementById('score');
+            scoreElement.innerHTML = `
+                Score: ${score} Punkte (${unDeducedScore} Punkte ohne Abzüge)
+                <span class="tooltip">Score is calculated based on correct guesses and time. Perfect score = 1000 points minus time penalty.</span>
+            `;
         });
 }
 window.onload = function() {

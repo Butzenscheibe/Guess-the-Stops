@@ -1,11 +1,23 @@
 const sqlite3 = require('sqlite3').verbose();
+const fs = require('fs');
 
 class Database {
     constructor(dbFile) {
-        this.db = new sqlite3.Database(dbFile, (err) => {
+        // Check if database file exists
+        if (!fs.existsSync(dbFile)) {
+            const error = new Error(`Database file not found: ${dbFile}\n` +
+                `Please ensure the database file exists at this location.\n` +
+                `For Docker deployments, make sure the database files are in the ./database directory on the host.`);
+            console.error(error.message);
+            throw error;
+        }
+        
+        this.db = new sqlite3.Database(dbFile, sqlite3.OPEN_READWRITE, (err) => {
             if (err) {
-                return console.error(err.message);
+                console.error(`Error opening database at ${dbFile}:`, err.message);
+                throw err;
             }
+            console.log(`Connected to database: ${dbFile}`);
         });
     }
 }

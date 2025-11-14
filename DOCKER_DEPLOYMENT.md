@@ -6,7 +6,14 @@ This guide explains how to deploy the Guess-the-Stops application using Docker C
 
 - Docker
 - Docker Compose
-- SQLite database files (german-db, timetable-gen, games)
+- **SQLite database files** (german-db, timetable-gen, games) - **REQUIRED**
+
+**IMPORTANT**: This application requires SQLite database files to function. You must have the following files in your `database/` directory before starting:
+- `database/german-db` - German railway timetable database
+- `database/timetable-gen` - Swiss railway timetable database  
+- `database/games` - Games archive database (will be created automatically if it doesn't exist)
+
+If you don't have these database files, the application will crash on startup.
 
 ## Quick Start
 

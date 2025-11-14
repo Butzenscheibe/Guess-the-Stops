@@ -229,6 +229,40 @@ app.get('/', (req, res) => {
     res.send(req.result);
 });
 
-app.listen(process.env.PORT || 3000, () => {
-    console.log(`Server is running on port ${process.env.PORT || 3000}`);
+// Global error handler
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+    process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    process.exit(1);
+});
+
+const PORT = process.env.PORT || 3000;
+
+// Startup checks
+console.log('=== Guess the Stops Server Startup ===');
+console.log('Environment configuration:');
+console.log('  PORT:', PORT);
+console.log('  DB_PATH_GERMAN:', process.env.DB_PATH_GERMAN || path.join(__dirname, '../../database/german-db'));
+console.log('  DB_PATH_SWISS:', process.env.DB_PATH_SWISS || path.join(__dirname, '../../database/timetable-gen'));
+console.log('  DB_PATH_ARCHIVE:', process.env.DB_PATH_ARCHIVE || path.join(__dirname, '../../database/games'));
+
+// Check if database directory exists (for Docker)
+const dbDir = path.join(__dirname, '../../database');
+if (!fs.existsSync(dbDir)) {
+    console.error(`ERROR: Database directory not found at ${dbDir}`);
+    console.error('For Docker deployments, ensure you have mounted the database volume correctly.');
+    console.error('The docker-compose.yml should have: volumes: - ./database:/app/database');
+    process.exit(1);
+}
+
+console.log('Database directory found:', dbDir);
+console.log('Starting server...');
+
+app.listen(PORT, () => {
+    console.log(`✓ Server is running on port ${PORT}`);
+    console.log('✓ Server is ready to accept connections');
 });

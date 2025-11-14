@@ -319,7 +319,53 @@ if (missingDatabases.length > 0) {
 console.log('\n✓ All required database files found');
 console.log('Starting server...\n');
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`✓ Server is running on port ${PORT}`);
     console.log('✓ Server is ready to accept connections');
+    console.log('Process PID:', process.pid);
+    console.log('Node version:', process.version);
+    
+    // Log that we're staying alive
+    setInterval(() => {
+        console.log('[Heartbeat] Server still running...', new Date().toISOString());
+    }, 30000); // Log every 30 seconds
 });
+
+console.log('[DEBUG] After app.listen() call');
+
+// Keep the server alive
+server.on('error', (err) => {
+    console.error('Server error:', err);
+    process.exit(1);
+});
+
+server.on('listening', () => {
+    console.log('[DEBUG] Server listening event fired');
+});
+
+server.on('close', () => {
+    console.log('[DEBUG] Server close event fired');
+});
+
+// Handle termination signals gracefully
+process.on('SIGTERM', () => {
+    console.log('SIGTERM signal received: closing HTTP server');
+    server.close(() => {
+        console.log('HTTP server closed');
+        process.exit(0);
+    });
+});
+
+process.on('SIGINT', () => {
+    console.log('SIGINT signal received: closing HTTP server');
+    server.close(() => {
+        console.log('HTTP server closed');
+        process.exit(0);
+    });
+});
+
+process.on('exit', (code) => {
+    console.log('[DEBUG] Process exit event with code:', code);
+});
+
+console.log('[DEBUG] End of index.js file reached');

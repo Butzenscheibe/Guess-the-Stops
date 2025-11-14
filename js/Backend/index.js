@@ -40,12 +40,21 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 async function createGameMiddleware(req, res, next) {
-    let starttime = Date.now();
-    let country = req.body.country;
-    let difficulty = req.body.difficulty
-    let gameID = await createGame(country, difficulty, starttime);
-    req.gameID = gameID;
-    next();
+    try {
+        let starttime = Date.now();
+        let country = req.body.country;
+        let difficulty = req.body.difficulty;
+        let gameID = await createGame(country, difficulty, starttime);
+        req.gameID = gameID;
+        next();
+    } catch (err) {
+        console.error('Error creating game:', err.message);
+        res.status(500).json({ 
+            error: 'Failed to create game', 
+            message: err.message,
+            hint: 'Make sure database files exist in the database directory'
+        });
+    }
 }
 async function getArchiveGameMiddleware(req, res, next) {
     let gameID = req.body.gameId;
@@ -246,21 +255,69 @@ const PORT = process.env.PORT || 3000;
 console.log('=== Guess the Stops Server Startup ===');
 console.log('Environment configuration:');
 console.log('  PORT:', PORT);
-console.log('  DB_PATH_GERMAN:', process.env.DB_PATH_GERMAN || path.join(__dirname, '../../database/german-db'));
-console.log('  DB_PATH_SWISS:', process.env.DB_PATH_SWISS || path.join(__dirname, '../../database/timetable-gen'));
-console.log('  DB_PATH_ARCHIVE:', process.env.DB_PATH_ARCHIVE || path.join(__dirname, '../../database/games'));
+
+const dbPathGerman = process.env.DB_PATH_GERMAN || path.join(__dirname, '../../database/german-db');
+const dbPathSwiss = process.env.DB_PATH_SWISS || path.join(__dirname, '../../database/timetable-gen');
+const dbPathArchive = process.env.DB_PATH_ARCHIVE || path.join(__dirname, '../../database/games');
+
+console.log('  DB_PATH_GERMAN:', dbPathGerman);
+console.log('  DB_PATH_SWISS:', dbPathSwiss);
+console.log('  DB_PATH_ARCHIVE:', dbPathArchive);
 
 // Check if database directory exists (for Docker)
 const dbDir = path.join(__dirname, '../../database');
+console.log('\nChecking database directory:', dbDir);
 if (!fs.existsSync(dbDir)) {
-    console.error(`ERROR: Database directory not found at ${dbDir}`);
-    console.error('For Docker deployments, ensure you have mounted the database volume correctly.');
-    console.error('The docker-compose.yml should have: volumes: - ./database:/app/database');
+    console.error('ERROR: Database directory not found at', dbDir);
+    console.error('For Docker: Make sure you have a "database" directory on your host');
+    console.error('The docker-compose.yml mounts: ./database:/app/database');
+    process.exit(1);
+}
+console.log('✓ Database directory exists');
+
+// Check for required database files
+console.log('\nChecking for database files...');
+const requiredDatabases = [
+    { name: 'German railway DB', path: dbPathGerman },
+    { name: 'Swiss railway DB', path: dbPathSwiss }
+];
+
+let missingDatabases = [];
+for (const db of requiredDatabases) {
+    if (fs.existsSync(db.path)) {
+        console.log(`  ✓ ${db.name}: ${db.path}`);
+    } else {
+        console.error(`  ✗ ${db.name}: NOT FOUND at ${db.path}`);
+        missingDatabases.push(db);
+    }
+}
+
+// Check archive database (create if doesn't exist)
+if (!fs.existsSync(dbPathArchive)) {
+    console.log(`  ! Archive DB will be created on first use: ${dbPathArchive}`);
+} else {
+    console.log(`  ✓ Archive DB: ${dbPathArchive}`);
+}
+
+if (missingDatabases.length > 0) {
+    console.error('\n❌ ERROR: Missing required database files!');
+    console.error('\nYou need to place the following files in your database directory:');
+    for (const db of missingDatabases) {
+        console.error(`  - ${path.basename(db.path)}`);
+    }
+    console.error('\nFor Docker:');
+    console.error('  1. Create a "database" directory on your host (where docker-compose.yml is)');
+    console.error('  2. Place the database files in that directory');
+    console.error('  3. The files will be accessible at /app/database/ inside the container');
+    console.error('\nExpected structure:');
+    console.error('  ./database/german-db');
+    console.error('  ./database/timetable-gen');
+    console.error('  ./database/games (created automatically)');
     process.exit(1);
 }
 
-console.log('Database directory found:', dbDir);
-console.log('Starting server...');
+console.log('\n✓ All required database files found');
+console.log('Starting server...\n');
 
 app.listen(PORT, () => {
     console.log(`✓ Server is running on port ${PORT}`);

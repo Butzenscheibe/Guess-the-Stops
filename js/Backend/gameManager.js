@@ -1,8 +1,9 @@
 const sqlite3 = require('sqlite3').verbose();
 const {v4: uuidv4} = require('uuid');
 const { Database, Train, GameTrain } = require('./game');
+const path = require('path');
 
-const archiveDB = "../../database/games";
+const archiveDB = process.env.DB_PATH_ARCHIVE || path.join(__dirname, "../../database/games");
 let archiveGames = new Map();
 
 
@@ -226,10 +227,10 @@ async function createGame(country, difficulty, starttime) {
     let db_path = ''
     switch (country) {
         case 'de':
-            db_path = '../../database/german-db';
+            db_path = process.env.DB_PATH_GERMAN || path.join(__dirname, '../../database/german-db');
             break;
         case 'ch':
-            db_path = '../../database/timetable-gen';
+            db_path = process.env.DB_PATH_SWISS || path.join(__dirname, '../../database/timetable-gen');
             break;
         default:
             throw new Error("Invalid country");

@@ -2,6 +2,7 @@ const {GameTrain} = require('./game.js');
 const {Database} = require('./game.js');
 const gameManager = require('./gameManager.js');
 const { v4: uuidv4 } = require('uuid');
+const path = require('path');
 
 const gerQuery = "select trip_id, route_id from trips where route_id in (select route_id from routes where route_type = 2 and agency_id = 27) order by random() limit 1;";
 const chQuery = "select route_id from routes where route_desc in (select Abbr from transport_modes where Ref = 'Z' and Abbr not in ('TER','TGV','EXT','ZUG')) order by random() limit 1;";
@@ -36,10 +37,10 @@ async function createSTSGame(country){
     let dbPath = "";
     switch (country) {
         case 'de':
-            dbPath = '../../database/german-db';
+            dbPath = process.env.DB_PATH_GERMAN || path.join(__dirname, '../../database/german-db');
             break;
         case 'ch':
-            dbPath = '../../database/timetable-gen';
+            dbPath = process.env.DB_PATH_SWISS || path.join(__dirname, '../../database/timetable-gen');
             break;
         default:
             throw new Error("Invalid country");

@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+.env
+.git
+.gitignore
+README.md
+database
+db-files
+db-total
+timetable-tmp
+py-testing
+mode_shorts
+*.md
+.DS_Store

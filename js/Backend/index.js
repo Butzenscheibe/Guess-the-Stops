@@ -1,4 +1,18 @@
-require('dotenv').config({ path: require('path').join(__dirname, '../../.env') });
+const path = require('path');
+const fs = require('fs');
+
+// Load .env file only if it exists (for local development)
+// In Docker, environment variables are set via docker-compose.yml
+const envPath = path.join(__dirname, '../../.env');
+if (fs.existsSync(envPath)) {
+    try {
+        const dotenv = require('dotenv');
+        dotenv.config({ path: envPath });
+    } catch (err) {
+        // dotenv not available - that's fine, we'll use env vars from system
+    }
+}
+
 const express = require('express');
 const {
     createGame,
@@ -21,7 +35,6 @@ const {
     getTime
 } = require('./gameManager');
 const sts = require('./sort-the-stations');
-const path = require('path');
 const app = express();
 app.use(express.json()); 
 app.use(express.static(path.join(__dirname, 'public')));

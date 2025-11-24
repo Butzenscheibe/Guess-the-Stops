@@ -47,8 +47,8 @@ const Leaderboard = () => {
       <h1>Leaderboard</h1>
       <ul id="leaderboard" className="stop-list">
         {leaderboard.length > 0 ? (
-          leaderboard.map((entry, index) => (
-            <li key={index}>
+          leaderboard.map((entry) => (
+            <li key={entry.id}>
               <a
                 href={`/shared-result?id=${entry.id}`}
                 onClick={(e) => {

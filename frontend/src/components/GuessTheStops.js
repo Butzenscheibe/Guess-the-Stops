@@ -140,7 +140,6 @@ const GuessTheStops = () => {
 
   const handleStartGame = async () => {
     setGameState('loading');
-    startFrontendTimer();
     
     try {
       const response = await apiService.startGame(country, difficulty);
@@ -154,6 +153,8 @@ const GuessTheStops = () => {
         const stopsResponse = await apiService.getGuessedStops(newGameId);
         setGuessedStations(stopsResponse.result || []);
         
+        // Start timer only after successful game creation
+        startFrontendTimer();
         setGameState('playing');
         setHintAmount(0);
         setMessage('Waiting...');
@@ -231,7 +232,19 @@ const GuessTheStops = () => {
   };
 
   const handleRestart = () => {
-    window.location.reload();
+    // Reset all state to initial values
+    setGameState('setup-country');
+    setGameId(null);
+    setCountry('ch');
+    setDifficulty('easy');
+    setTrainName('Loading...');
+    setUserInput('');
+    setGuessedStations([]);
+    setHintAmount(0);
+    setMessage('Waiting...');
+    setTimer('Time: 00:00:00');
+    setScore('Score: --');
+    setPlayerName('');
   };
 
   const handleShare = () => {

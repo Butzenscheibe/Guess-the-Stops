@@ -1,22 +1,83 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import apiService from '../services/api';
 
 const GuessTheStops = () => {
-  const [gameState, setGameState] = useState('setup-country'); // 'setup-country', 'setup-difficulty', 'playing', 'finished'
+  const navigate = useNavigate();
+  const [gameState, setGameState] = useState('setup-country');
   const [country, setCountry] = useState('ch');
   const [difficulty, setDifficulty] = useState('easy');
   const [gameId, setGameId] = useState(null);
-  const [trainName, setTrainName] = useState('');
+  const [trainName, setTrainName] = useState('Loading...');
   const [userInput, setUserInput] = useState('');
   const [guessedStations, setGuessedStations] = useState([]);
   const [hintAmount, setHintAmount] = useState(0);
-  const [message, setMessage] = useState('');
-  const [timer, setTimer] = useState('00:00');
-  const [score, setScore] = useState(null);
-  const [solutions, setSolutions] = useState([]);
+  const [message, setMessage] = useState('Waiting...');
+  const [timer, setTimer] = useState('Time: 00:00:00');
+  const [score, setScore] = useState('Score: --');
+  const [playerName, setPlayerName] = useState('');
   const inputRef = useRef(null);
   const timerIntervalRef = useRef(null);
   const gameStartTimeRef = useRef(null);
+
+  const stopFrontendTimer = useCallback(() => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+  }, []);
+
+  const updateTime = useCallback(async () => {
+    if (!gameId) return;
+    try {
+      const response = await apiService.getTime(gameId);
+      if (response.result) {
+        const time = response.result;
+        let totalSeconds = Math.floor(time / 1000);
+        let hours = Math.floor(totalSeconds / 3600);
+        totalSeconds %= 3600;
+        let minutes = Math.floor(totalSeconds / 60);
+        let seconds = totalSeconds % 60;
+        
+        if (hours < 10) hours = "0" + hours;
+        if (minutes < 10) minutes = "0" + minutes;
+        if (seconds < 10) seconds = "0" + seconds;
+        
+        setTimer(`Time: ${hours}:${minutes}:${seconds}`);
+      }
+    } catch (error) {
+      console.error('Error updating time:', error);
+    }
+  }, [gameId]);
+
+  const updateScore = useCallback(async () => {
+    if (!gameId) return;
+    try {
+      const response = await apiService.getScore(gameId);
+      if (response.result) {
+        const score = response.result.score;
+        const unDeducedScore = response.result.unDeducedScore;
+        setScore(`Score: ${score} Points (${unDeducedScore} Points without deductions)`);
+      }
+    } catch (error) {
+      console.error('Error updating score:', error);
+    }
+  }, [gameId]);
+
+  const archiveTrain = useCallback(async () => {
+    if (!gameId) return;
+    try {
+      await apiService.archiveTrain(gameId);
+    } catch (error) {
+      console.error('Error archiving train:', error);
+    }
+  }, [gameId]);
+
+  const afterGame = useCallback(() => {
+    stopFrontendTimer();
+    archiveTrain();
+    setGameState('finished');
+  }, [stopFrontendTimer, archiveTrain]);
 
   useEffect(() => {
     return () => {
@@ -26,21 +87,51 @@ const GuessTheStops = () => {
     };
   }, []);
 
-  const startTimer = () => {
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (gameId && gameState === 'playing') {
+        apiService.deleteGame(gameId).catch(() => {});
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [gameId, gameState]);
+
+  useEffect(() => {
+    const handleBlur = async () => {
+      if (gameId && gameState === 'playing') {
+        try {
+          const response = await apiService.cancelGame(gameId);
+          if (response.result) {
+            await updateScore();
+            setMessage('Game cancelled - window lost focus');
+            setGuessedStations(response.result);
+            await updateTime();
+            afterGame();
+          }
+        } catch (error) {
+          console.error('Error canceling on blur:', error);
+        }
+      }
+    };
+
+    window.addEventListener('blur', handleBlur);
+    return () => window.removeEventListener('blur', handleBlur);
+  }, [gameId, gameState, updateScore, updateTime, afterGame]);
+
+  const startFrontendTimer = () => {
     gameStartTimeRef.current = Date.now();
     timerIntervalRef.current = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - gameStartTimeRef.current) / 1000);
-      const minutes = Math.floor(elapsed / 60);
-      const seconds = elapsed % 60;
-      setTimer(`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
+      const elapsed = Date.now() - gameStartTimeRef.current;
+      const totalSeconds = Math.floor(elapsed / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      
+      const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      setTimer(`Time: ${timeStr}`);
     }, 1000);
-  };
-
-  const stopTimer = () => {
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-      timerIntervalRef.current = null;
-    }
   };
 
   const handleCountryContinue = () => {
@@ -48,64 +139,77 @@ const GuessTheStops = () => {
   };
 
   const handleStartGame = async () => {
+    setGameState('loading');
+    startFrontendTimer();
+    
     try {
       const response = await apiService.startGame(country, difficulty);
       if (response.gameId) {
-        setGameId(response.gameId);
-        const trainResponse = await apiService.getTrainName(response.gameId);
+        const newGameId = response.gameId;
+        setGameId(newGameId);
+        
+        const trainResponse = await apiService.getTrainName(newGameId);
         setTrainName(trainResponse.result || 'Unknown Train');
+        
+        const stopsResponse = await apiService.getGuessedStops(newGameId);
+        setGuessedStations(stopsResponse.result || []);
+        
         setGameState('playing');
-        setGuessedStations([]);
         setHintAmount(0);
-        setMessage('');
-        startTimer();
+        setMessage('Waiting...');
         setTimeout(() => inputRef.current?.focus(), 100);
       }
     } catch (error) {
       setMessage('Error starting game. Please try again.');
       console.error('Error starting game:', error);
+      setGameState('setup-difficulty');
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!userInput.trim() || !gameId) return;
+  const submit = async () => {
+    const stationName = userInput.trim();
+    setUserInput('');
+    
+    if (!stationName || !gameId) return;
 
     try {
-      const response = await apiService.checkStation(gameId, userInput.trim());
-      if (response.result) {
-        setMessage('Correct! ✓');
-        const stopsResponse = await apiService.getGuessedStops(gameId);
-        setGuessedStations(stopsResponse.result || []);
-        setUserInput('');
-        
-        // Check if won
-        const winResponse = await apiService.checkWin(gameId);
-        if (winResponse.result) {
-          handleWin();
-        }
+      const checkResponse = await apiService.checkStation(gameId, stationName);
+      if (checkResponse.result) {
+        setMessage('Correct!');
       } else {
-        setMessage('Incorrect station name. Try again!');
+        setMessage('Incorrect!');
+      }
+      
+      const stopsResponse = await apiService.getGuessedStops(gameId);
+      setGuessedStations(stopsResponse.result || []);
+      
+      const winResponse = await apiService.checkWin(gameId);
+      if (winResponse.result) {
+        await updateScore();
+        setMessage('Won!');
+        afterGame();
+        await updateTime();
       }
     } catch (error) {
-      setMessage('Error checking station. Please try again.');
-      console.error('Error checking station:', error);
+      setMessage('Error checking station.');
+      console.error('Error in submit:', error);
     }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    submit();
   };
 
   const handleHint = async () => {
     if (!gameId) return;
     try {
-      const newHintAmount = hintAmount + 1;
-      const response = await apiService.getHint(gameId, newHintAmount);
+      const response = await apiService.getHint(gameId, hintAmount);
       if (response.result) {
-        setHintAmount(newHintAmount);
-        setMessage(`Hint: ${response.result}`);
-        const stopsResponse = await apiService.getGuessedStops(gameId);
-        setGuessedStations(stopsResponse.result || []);
+        setGuessedStations(response.result);
+        setHintAmount(hintAmount + 1);
       }
     } catch (error) {
-      setMessage('Error getting hint. Please try again.');
       console.error('Error getting hint:', error);
     }
   };
@@ -115,64 +219,52 @@ const GuessTheStops = () => {
     try {
       const response = await apiService.cancelGame(gameId);
       if (response.result) {
-        stopTimer();
-        setSolutions(response.result);
-        const scoreResponse = await apiService.getScore(gameId);
-        setScore(scoreResponse.result);
-        setGameState('finished');
+        await updateScore();
+        setMessage('Game cancelled');
+        setGuessedStations(response.result);
+        await updateTime();
+        afterGame();
       }
     } catch (error) {
-      setMessage('Error canceling game. Please try again.');
       console.error('Error canceling game:', error);
     }
   };
 
-  const handleWin = async () => {
-    stopTimer();
-    try {
-      const scoreResponse = await apiService.getScore(gameId);
-      setScore(scoreResponse.result);
-      const timeResponse = await apiService.getTime(gameId);
-      if (timeResponse.result) {
-        const elapsed = timeResponse.result;
-        const minutes = Math.floor(elapsed / 60000);
-        const seconds = Math.floor((elapsed % 60000) / 1000);
-        setTimer(`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
-      }
-      setGameState('finished');
-      setMessage('Congratulations! You won! 🎉');
-    } catch (error) {
-      console.error('Error handling win:', error);
-    }
+  const handleRestart = () => {
+    window.location.reload();
   };
 
-  const handleNewGame = () => {
-    setGameState('setup-country');
-    setGameId(null);
-    setTrainName('');
-    setUserInput('');
-    setGuessedStations([]);
-    setHintAmount(0);
-    setMessage('');
-    setTimer('00:00');
-    setScore(null);
-    setSolutions([]);
-    setCountry('ch');
-    setDifficulty('easy');
+  const handleShare = () => {
+    if (!gameId) return;
+    const url = `${window.location.origin}/shared-result?id=${gameId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      alert('Link copied!');
+    }).catch(() => {
+      alert('Failed to copy link');
+    });
+  };
+
+  const handleShowSaveForm = () => {
+    setGameState('save-name');
   };
 
   const handleSaveGame = async () => {
-    if (!gameId) return;
-    const name = prompt('Enter your name:');
-    if (name) {
-      try {
-        await apiService.saveGame(gameId, name);
-        setMessage('Game saved successfully!');
-      } catch (error) {
-        setMessage('Error saving game.');
-        console.error('Error saving game:', error);
-      }
+    if (!gameId || !playerName.trim()) {
+      alert('Please enter your name!');
+      return;
     }
+    try {
+      await apiService.saveGame(gameId, playerName.trim());
+      setGameState('finished');
+      window.dispatchEvent(new Event('leaderboardUpdate'));
+    } catch (error) {
+      alert('Error saving game.');
+      console.error('Error saving game:', error);
+    }
+  };
+
+  const handleGoToSortStations = () => {
+    navigate('/sort-the-stations');
   };
 
   return (
@@ -190,7 +282,8 @@ const GuessTheStops = () => {
             <option value="ch">Switzerland</option>
             <option value="de">Germany</option>
           </select>
-          <button onClick={handleCountryContinue}>Continue</button>
+          <button id="country-button" onClick={handleCountryContinue}>Continue</button>
+          <button id="sts-btn" onClick={handleGoToSortStations}>Sort the Stations</button>
         </div>
       )}
 
@@ -206,86 +299,99 @@ const GuessTheStops = () => {
             <option value="medium">Medium</option>
             <option value="hard">Hard</option>
           </select>
-          <button onClick={handleStartGame}>Start Game</button>
+          <button id="difficulty-button" onClick={handleStartGame}>Start Game</button>
+        </div>
+      )}
+
+      {gameState === 'loading' && (
+        <div>
+          <p>Starting game...</p>
         </div>
       )}
 
       {gameState === 'playing' && (
-        <div id="game-input">
-          <div className="train-info">
-            <h2>{trainName}</h2>
-            <div className="timer">{timer}</div>
+        <>
+          <div id="game-output">
+            <h2 id="train-name">{trainName}</h2>
+            <div className="stats-grid">
+              <p id="score">{score}</p>
+              <p id="time">{timer}</p>
+            </div>
+            <p id="result">{message}</p>
           </div>
 
-          <form onSubmit={handleSubmit}>
-            <label htmlFor="user-input" id="user-input-label">Enter Station Name</label>
-            <input
-              ref={inputRef}
-              type="text"
-              id="user-input"
-              placeholder="Type station name..."
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-            />
-            <div className="button-grid">
-              <button type="submit" id="submit-button">Submit</button>
-              <button type="button" onClick={handleHint}>Hint (-20%)</button>
-              <button type="button" onClick={handleCancel}>Cancel</button>
-            </div>
-          </form>
+          <div id="game-input">
+            <form onSubmit={handleSubmit}>
+              <label htmlFor="user-input" id="user-input-label">Enter Station Name</label>
+              <input
+                ref={inputRef}
+                type="text"
+                id="user-input"
+                placeholder="Type station name..."
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+              />
+              <div className="button-grid">
+                <button type="submit" id="submit-button">Submit</button>
+                <button type="button" onClick={handleHint} id="hint">Hint (-20%)</button>
+                <button type="button" onClick={handleCancel} id="cancel-button">Cancel</button>
+              </div>
+            </form>
 
-          {message && <div className="message">{message}</div>}
+            <ul id="stop-list" className="stop-list">
+              {guessedStations.map((station, index) => (
+                <li key={index}>{station}</li>
+              ))}
+            </ul>
+          </div>
+        </>
+      )}
 
-          {guessedStations.length > 0 && (
-            <div id="guessed-stations">
-              <h3>Guessed Stations ({guessedStations.length})</h3>
-              <ul>
-                {guessedStations.map((station, index) => (
-                  <li key={index}>{station}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+      {gameState === 'save-name' && (
+        <div id="save-input">
+          <h2>Save Your Result</h2>
+          <label htmlFor="save-name">Your Name</label>
+          <input
+            type="text"
+            id="save-name"
+            placeholder="Enter your name..."
+            value={playerName}
+            onChange={(e) => setPlayerName(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleSaveGame();
+              }
+            }}
+          />
+          <button onClick={handleSaveGame} id="save-button">Save Score</button>
         </div>
       )}
 
       {gameState === 'finished' && (
-        <div id="result-screen">
-          <h2>Game Over!</h2>
-          {score !== null && (
-            <div className="score-display">
-              <h3>Your Score: {score}%</h3>
-              <p>Time: {timer}</p>
+        <>
+          <div id="game-output">
+            <h2 id="train-name">{trainName}</h2>
+            <div className="stats-grid">
+              <p id="score">{score}</p>
+              <p id="time">{timer}</p>
             </div>
-          )}
+            <p id="result">{message}</p>
 
-          {guessedStations.length > 0 && (
-            <div className="guessed-list">
-              <h3>Stations You Found ({guessedStations.length})</h3>
-              <ul>
-                {guessedStations.map((station, index) => (
-                  <li key={index}>{station}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {solutions.length > 0 && (
-            <div className="missed-list">
-              <h3>Stations You Missed</h3>
-              <ul>
-                {solutions.map((station, index) => (
-                  <li key={index}>{station}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <div className="button-grid">
-            <button onClick={handleNewGame}>New Game</button>
-            <button onClick={handleSaveGame}>Save Score</button>
+            <ul id="stop-list" className="stop-list">
+              {guessedStations.map((station, index) => (
+                <li key={index}>{station}</li>
+              ))}
+            </ul>
           </div>
-        </div>
+
+          <div id="game-input">
+            <div className="button-grid">
+              <button onClick={handleRestart} id="restart-button">Restart</button>
+              <button onClick={handleShare} id="share">Share</button>
+              <button onClick={handleShowSaveForm} id="save">Save Result</button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="View shared game results">
+    <meta name="theme-color" content="#3b82f6">
+    <title>Shared Result - Guess the Stations</title>
+    <link rel="stylesheet" href="./style.css">
+    <script src="shared-result.js"></script>
+</head>
+<body>
+    <div class="game-container" id="game-container">
+        <h1>Guess the Stations</h1>
+        <h2>Game Result</h2>
+        <div class="stats-grid">
+            <p id="score">Score: --</p>
+            <p id="name">Player: --</p>
+        </div>
+        <div id="stop-div">
+            <div id="guesses">
+                <h3>Your Guesses</h3>
+                <ul id="stop-list" class="stop-list"></ul>
+            </div>
+            <div id="correct">
+                <h3>Correct Answers</h3>
+                <ul id="correct-list" class="stop-list"></ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

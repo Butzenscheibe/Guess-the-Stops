@@ -282,7 +282,7 @@ console.log('  DB_PATH_SWISS:', dbPathSwiss);
 console.log('  DB_PATH_ARCHIVE:', dbPathArchive);
 
 // Check if database directory exists (for Docker)
-const dbDir = path.join(__dirname, '../database');
+/* const dbDir = path.join(__dirname, '../database');
 console.log('\nChecking database directory:', dbDir);
 if (!fs.existsSync(dbDir)) {
     console.error('ERROR: Database directory not found at', dbDir);
@@ -290,7 +290,7 @@ if (!fs.existsSync(dbDir)) {
     console.error('The docker-compose.yml mounts: ./database:/app/database');
     process.exit(1);
 }
-console.log('✓ Database directory exists');
+console.log('✓ Database directory exists'); */
 
 // Check for required database files
 console.log('\nChecking for database files...');

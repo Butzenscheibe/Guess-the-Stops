@@ -479,9 +479,13 @@ function updateLeaderboard(){
             });
         });
 }
-document.getElementById('sts-btn').addEventListener('click', function() {
-    window.location.href = 'sort-the-stations.html';
-});
+// Optional STS button handler
+const stsBtn = document.getElementById('sts-btn');
+if (stsBtn) {
+    stsBtn.addEventListener('click', function() {
+        window.location.href = 'sort-the-stations.html';
+    });
+}
 
 // Modal functionality
 function initModal() {
@@ -533,7 +537,6 @@ function initFeedbackForm() {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Sending...';
         statusDiv.className = 'feedback-status';
-        statusDiv.style.display = 'none';
         
         const formData = {
             name: nameInput.value.trim(),

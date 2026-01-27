@@ -4,3 +4,5 @@
 /timetable-tmp
 /js/Backend/node_modules
 .env
+tmp/
+timetables.zip

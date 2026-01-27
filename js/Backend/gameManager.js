@@ -69,6 +69,7 @@ class Game {
     }
     async startGame() {
         let query = this.buildQuery();
+        console.log('SQL Query for selecting train:', query);
         let [tripId, routeId] = await selectRandTrain(query, this.country, this.db);
         let stops = await selectAllStops(tripId, this.db);
         if(stops.length <= 2){
@@ -76,7 +77,7 @@ class Game {
             return;
         }
         this.amountOfStations = stops.length;
-        let trainName = await getTrainNameFromDB(routeId, this.country, this.db);
+        let trainName = await getTrainNameFromDB(routeId, this.country, this.db, tripId);
         console.log('Train:', trainName);
         this.train = new GameTrain(tripId, routeId, trainName, stops);
         createArchiveGame(this.gameId, this);
@@ -94,6 +95,40 @@ class Game {
                         break;
                     case 'hard':
                         query = "select trip_id, route_id from trips where route_id in (select route_id from routes where agency_id in (75) and route_type = 1 ) order by random() limit 1;";
+                        break;
+                    default:
+                        throw new Error("Invalid difficulty level");
+                }
+                break;
+            case 'nsw': 
+                //easy: only sydney trains
+                //medium: also intercity trains
+                //hard: all trains including regional
+                 switch (this.difficulty) {
+                    case 'easy':
+                        query = "select route_id from routes where agency_id = 'x0001' order by random() limit 1;";
+                        break;
+                    case 'medium':
+                        query = "select route_id from routes where route_type='2' order by random() limit 1;";
+                        break;
+                    case 'hard':
+                        query = "select route_id from routes where route_type in ('2','204') order by random() limit 1;";
+                        break;
+                    default:
+                        throw new Error("Invalid difficulty level");
+                        break;
+                    }
+                break;
+            case 'at':
+                switch (this.difficulty) {
+                    case 'easy':
+                        query = "select trip_id, route_id from trips where route_id in (select route_id from routes where route_short_name like 'R%' or route_short_name like 'REX%') order by random() limit 1;";
+                        break;
+                    case 'medium':
+                        query = "select trip_id, route_id from trips where route_id not in (select route_id from routes where route_short_name like 'S%') order by random() limit 1;";
+                        break;
+                    case 'hard':
+                        query = "select trip_id, route_id from trips order by random() limit 1;";
                         break;
                     default:
                         throw new Error("Invalid difficulty level");
@@ -125,13 +160,19 @@ function createGameID(){
 
 }
 
-async function getTrainNameFromDB(routeId, country, db) {
+async function getTrainNameFromDB(routeId, country, db, tripId) {
     let sql;
     switch (country) {
+        case 'nsw':
+            sql = "SELECT route_long_name FROM routes WHERE route_id = ?";
+            break;
         case 'ch':
             sql = "SELECT route_short_name, route_desc FROM routes WHERE route_id = ?";
             break;
         case 'de':
+            sql = "SELECT route_short_name FROM routes WHERE route_id = ?";
+            break;
+        case 'at':
             sql = "SELECT route_short_name FROM routes WHERE route_id = ?";
             break;
         default:
@@ -146,7 +187,10 @@ async function getTrainNameFromDB(routeId, country, db) {
             } else {
                 if (country === 'ch') {
                     resolve(row.route_short_name + ' (' + row.route_desc + ')');
-                } else {
+                } else if (country === 'nsw') {
+                    resolve(row.route_long_name);
+                } 
+                else {
                     resolve(row.route_short_name);
             }
         }
@@ -157,7 +201,7 @@ async function getTrainNameFromDB(routeId, country, db) {
 async function selectRandTrain(query, country, db) {
     let result;
 
-    if (country === 'de') {
+    if (country === 'de' || country === 'at') {
         result = await new Promise((resolve, reject) => {
             db.get(query, (err, row) => {
                 if (err) {
@@ -223,6 +267,7 @@ async function selectAllStops(trainId, db) {
 }
 
 async function createGame(country, difficulty, starttime) {
+    console.log('Creating game with country:', country, 'difficulty:', difficulty, 'starttime:', starttime);
     let gameId = createGameID();
     let db_path = ''
     switch (country) {
@@ -231,6 +276,12 @@ async function createGame(country, difficulty, starttime) {
             break;
         case 'ch':
             db_path = process.env.DB_PATH_SWISS || path.join(__dirname, '../../database/timetable-gen');
+            break;
+        case 'at':
+            db_path = process.env.DB_PATH_AUSTRIA || path.join(__dirname, '../../database/austria-db');
+            break;
+        case 'nsw':
+            db_path = process.env.DB_PATH_NSW || path.join(__dirname, '../../database/syd-db');
             break;
         default:
             throw new Error("Invalid country");

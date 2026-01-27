@@ -9,6 +9,8 @@ services:
       - DB_PATH_GERMAN=${DB_PATH_GERMAN:-/app/database/german-db}
       - DB_PATH_SWISS=${DB_PATH_SWISS:-/app/database/timetable-gen}
       - DB_PATH_ARCHIVE=${DB_PATH_ARCHIVE:-/app/database/games}
+      - DB_PATH_NSW=${DB_PATH_NSW:-/app/database/syd-db}
+      - DB_PATH_AUSTRIA=${DB_PATH_AUSTRIA:-/app/database/austria-db}
     volumes:
       # Mount the database directory to persist SQLite databases
       - ./database:/app/database

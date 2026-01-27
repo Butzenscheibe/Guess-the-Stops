@@ -71,6 +71,9 @@ async function getArchiveGameMiddleware(req, res, next) {
 
 
 app.post('/start-game', createGameMiddleware, (req, res) => {
+    console.log('[DEBUG] In /start-game route handler');
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+    console.log(`Starting new game for IP: ${ip}, Game ID: ${req.gameID}`);
     res.json({gameId: req.gameID});
 });
 app.post('/check-station', (req, res) => {
@@ -235,6 +238,9 @@ app.post('/sts/get-trainname', (req, res) => {
 
 });
 app.get('/', (req, res) => {
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
+    console.log(`Received request from IP: ${ip}`);
+    console.log(`[DEBUG] Serving index.html`);
     res.send(req.result);
 });
 
@@ -259,10 +265,14 @@ console.log('  PORT:', PORT);
 const dbPathGerman = process.env.DB_PATH_GERMAN || path.join(__dirname, '../../database/german-db');
 const dbPathSwiss = process.env.DB_PATH_SWISS || path.join(__dirname, '../../database/timetable-gen');
 const dbPathArchive = process.env.DB_PATH_ARCHIVE || path.join(__dirname, '../../database/games');
+const dbPathNSW = process.env.DB_PATH_NSW || path.join(__dirname, '../../database/syd-db');
+const dbPathAustria = process.env.DB_PATH_AUSTRIA || path.join(__dirname, '../../database/austria-db');
 
 console.log('  DB_PATH_GERMAN:', dbPathGerman);
 console.log('  DB_PATH_SWISS:', dbPathSwiss);
 console.log('  DB_PATH_ARCHIVE:', dbPathArchive);
+console.log('  DB_PATH_NSW:', dbPathNSW);
+console.log('  DB_PATH_AUSTRIA:', dbPathAustria);
 
 // Check if database directory exists (for Docker)
 const dbDir = path.join(__dirname, '../../database');
@@ -279,7 +289,9 @@ console.log('✓ Database directory exists');
 console.log('\nChecking for database files...');
 const requiredDatabases = [
     { name: 'German railway DB', path: dbPathGerman },
-    { name: 'Swiss railway DB', path: dbPathSwiss }
+    { name: 'Swiss railway DB', path: dbPathSwiss },
+    { name: 'NSW railway DB', path: dbPathNSW },
+    {name: 'Austria railway DB', path: dbPathAustria }
 ];
 
 let missingDatabases = [];

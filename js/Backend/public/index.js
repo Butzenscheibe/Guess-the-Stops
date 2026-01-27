@@ -493,6 +493,11 @@ function initModal() {
     const closeBtn = document.getElementById('modal-close-btn');
     const dontShowCheckbox = document.getElementById('dont-show-again');
     
+    // Guard: check if modal elements exist
+    if (!modal || !closeBtn || !dontShowCheckbox) {
+        return;
+    }
+    
     // Check if modal should be shown
     const modalShown = localStorage.getItem('update-modal-shown');
     
@@ -502,21 +507,28 @@ function initModal() {
         }, 500); // Show modal after 500ms delay
     }
     
-    // Close modal
-    closeBtn.addEventListener('click', function() {
+    // Close modal function
+    const closeModal = () => {
         if (dontShowCheckbox.checked) {
             localStorage.setItem('update-modal-shown', 'true');
         }
         modal.classList.remove('show');
-    });
+    };
+    
+    // Close modal on button click
+    closeBtn.addEventListener('click', closeModal);
     
     // Close modal when clicking outside
     modal.addEventListener('click', function(e) {
         if (e.target === modal) {
-            if (dontShowCheckbox.checked) {
-                localStorage.setItem('update-modal-shown', 'true');
-            }
-            modal.classList.remove('show');
+            closeModal();
+        }
+    });
+    
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('show')) {
+            closeModal();
         }
     });
 }
@@ -526,6 +538,11 @@ function initFeedbackForm() {
     const form = document.getElementById('feedbackForm');
     const statusDiv = document.getElementById('feedbackStatus');
     
+    // Guard: check if form elements exist
+    if (!form || !statusDiv) {
+        return;
+    }
+    
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -533,14 +550,24 @@ function initFeedbackForm() {
         const nameInput = document.getElementById('feedback-name');
         const feedbackInput = document.getElementById('feedback-text');
         
+        // Validate trimmed values
+        const name = nameInput.value.trim();
+        const feedback = feedbackInput.value.trim();
+        
+        if (!name || !feedback) {
+            statusDiv.className = 'feedback-status error';
+            statusDiv.textContent = '✗ Please fill in all fields.';
+            return;
+        }
+        
         // Disable submit button and show loading state
         submitBtn.disabled = true;
         submitBtn.textContent = 'Sending...';
         statusDiv.className = 'feedback-status';
         
         const formData = {
-            name: nameInput.value.trim(),
-            feedback: feedbackInput.value.trim(),
+            name: name,
+            feedback: feedback,
             subject: 'GTS'
         };
         
@@ -557,6 +584,11 @@ function initFeedbackForm() {
                 statusDiv.className = 'feedback-status success';
                 statusDiv.textContent = '✓ Thank you! Your feedback has been submitted successfully.';
                 form.reset();
+                
+                // Auto-hide success message after 5 seconds
+                setTimeout(() => {
+                    statusDiv.className = 'feedback-status';
+                }, 5000);
             } else {
                 throw new Error('Failed to submit feedback');
             }

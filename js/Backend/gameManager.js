@@ -291,9 +291,9 @@ async function selectAllStops(trainId, db) {
     return stops;
 }
 async function createGameTraining(regionPath, starttime) {
-    country = regionPath.split('_')[0];
-    region = regionPath.split('_')[1];
-    mode = regionPath.split('_')[2];
+    let country = regionPath.split('_')[0];
+    let region = regionPath.split('_')[1];
+    let mode = regionPath.split('_')[2];
     let db_path = ''
     switch (country) {
         case 'de':
@@ -317,7 +317,7 @@ async function createGameTraining(regionPath, starttime) {
     game.setRegionMode(region, mode);
     games.set(gameId, game);
     console.log('Training Game created with ID:', gameId);
-    await game.startGameTraining(region, mode);
+    await game.startGame();
     return gameId;
 }
 

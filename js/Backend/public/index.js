@@ -479,6 +479,137 @@ function updateLeaderboard(){
             });
         });
 }
-document.getElementById('sts-btn').addEventListener('click', function() {
-    window.location.href = 'sort-the-stations.html';
-});
+// Optional STS button handler
+const stsBtn = document.getElementById('sts-btn');
+if (stsBtn) {
+    stsBtn.addEventListener('click', function() {
+        window.location.href = 'sort-the-stations.html';
+    });
+}
+
+// Modal functionality
+function initModal() {
+    const modal = document.getElementById('update-modal');
+    const closeBtn = document.getElementById('modal-close-btn');
+    const dontShowCheckbox = document.getElementById('dont-show-again');
+    
+    // Guard: check if modal elements exist
+    if (!modal || !closeBtn || !dontShowCheckbox) {
+        return;
+    }
+    
+    // Check if modal should be shown
+    const modalShown = localStorage.getItem('update-modal-shown');
+    
+    if (!modalShown) {
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 500); // Show modal after 500ms delay
+    }
+    
+    // Close modal function
+    const closeModal = () => {
+        if (dontShowCheckbox.checked) {
+            localStorage.setItem('update-modal-shown', 'true');
+        }
+        modal.classList.remove('show');
+    };
+    
+    // Close modal on button click
+    closeBtn.addEventListener('click', closeModal);
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+    
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('show')) {
+            closeModal();
+        }
+    });
+}
+
+// Feedback form functionality
+function initFeedbackForm() {
+    const form = document.getElementById('feedbackForm');
+    const statusDiv = document.getElementById('feedbackStatus');
+    
+    // Guard: check if form elements exist
+    if (!form || !statusDiv) {
+        return;
+    }
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = form.querySelector('.submit-btn');
+        const nameInput = document.getElementById('feedback-name');
+        const feedbackInput = document.getElementById('feedback-text');
+        
+        // Validate trimmed values
+        const name = nameInput.value.trim();
+        const feedback = feedbackInput.value.trim();
+        
+        if (!name || !feedback) {
+            statusDiv.className = 'feedback-status error';
+            statusDiv.textContent = '✗ Please fill in all fields.';
+            return;
+        }
+        
+        // Disable submit button and show loading state
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+        statusDiv.className = 'feedback-status';
+        
+        const formData = {
+            name: name,
+            feedback: feedback,
+            subject: 'GTS'
+        };
+        
+        try {
+            const response = await fetch('https://feedback.diebutzenscheibe.dev/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            if (response.ok) {
+                statusDiv.className = 'feedback-status success';
+                statusDiv.textContent = '✓ Thank you! Your feedback has been submitted successfully.';
+                form.reset();
+                
+                // Auto-hide success message after 5 seconds
+                setTimeout(() => {
+                    statusDiv.className = 'feedback-status';
+                }, 5000);
+            } else {
+                throw new Error('Failed to submit feedback');
+            }
+        } catch (error) {
+            statusDiv.className = 'feedback-status error';
+            statusDiv.textContent = '✗ Failed to submit feedback. Please try again later.';
+            console.error('Feedback submission error:', error);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Feedback';
+        }
+    });
+}
+
+// Initialize modal and feedback on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        initModal();
+        initFeedbackForm();
+    });
+} else {
+    initModal();
+    initFeedbackForm();
+}

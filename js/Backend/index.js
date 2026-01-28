@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-
+const trainingRegions = require('./trainingRegions');
 // Load .env file only if it exists (for local development)
 // In Docker, environment variables are set via docker-compose.yml
 const envPath = path.join(__dirname, '../../.env');
@@ -236,6 +236,35 @@ app.post('/sts/get-trainname', (req, res) => {
         res.json({result: false});
     }
 
+});
+//Training
+//training-regions returns available countries for training mode
+app.get('/training/countries', (req, res) => {
+    res.json({countries: trainingRegions.map(c => c.country)});
+});
+//training/<country>/regions returns available regions for training mode in a country
+app.get('/training/:country/regions', (req, res) => {
+    let country = req.params.country;
+    let trainingCountry = trainingRegions.find(c => c.country === country);
+    if (trainingCountry) {
+        res.json({regions: trainingCountry.regions.map(r => r.name)});
+    } else {
+        res.json({regions: []});
+    }
+});
+//training/<country>/<region>/modes returns available modes for training mode in a region
+app.get('/training/:country/:region/modes', (req, res) => {
+    let country = req.params.country;
+    let regionName = req.params.region;
+    let trainingCountry = trainingRegions.find(c => c.country === country);
+    if (trainingCountry) {
+        let trainingRegion = trainingCountry.regions.find(r => r.name === regionName);
+        if (trainingRegion) {
+            res.json({modes: trainingRegion.selectableModes.map(m => m.mode)});
+            return;
+        }
+    }
+    res.json({modes: []});
 });
 app.get('/', (req, res) => {
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress

@@ -136,6 +136,197 @@ function stopFrontendTimer() {
     }
 }
 
+// Training mode variables
+let trainingCountry = null;
+let trainingRegion = null;
+let trainingMode = null;
+
+// Training mode: Load available countries
+async function loadTrainingCountries() {
+    try {
+        const response = await fetch('/training/countries');
+        const data = await response.json();
+        const select = document.getElementById('training-country-select');
+        select.innerHTML = '';
+        
+        if (data.countries && data.countries.length > 0) {
+            data.countries.forEach(countryCode => {
+                const option = document.createElement('option');
+                option.value = countryCode;
+                // Map country codes to full names
+                const countryNames = {
+                    'ch': 'Switzerland',
+                    'de': 'Germany',
+                    'at': 'Austria',
+                    'nsw': 'New South Wales, Australia'
+                };
+                option.textContent = countryNames[countryCode] || countryCode;
+                select.appendChild(option);
+            });
+            // Reinitialize custom selects for the new dropdown
+            initCustomSelects();
+        } else {
+            select.innerHTML = '<option value="">No countries available</option>';
+        }
+    } catch (error) {
+        console.error('Error loading training countries:', error);
+        document.getElementById('training-country-select').innerHTML = '<option value="">Error loading countries</option>';
+    }
+}
+
+// Training mode: Load available regions for a country
+async function loadTrainingRegions(countryCode) {
+    try {
+        const response = await fetch(`/training/${countryCode}/regions`);
+        const data = await response.json();
+        const select = document.getElementById('training-region-select');
+        select.innerHTML = '';
+        
+        if (data.regions && data.regions.length > 0) {
+            data.regions.forEach(regionName => {
+                const option = document.createElement('option');
+                option.value = regionName;
+                option.textContent = regionName;
+                select.appendChild(option);
+            });
+            // Reinitialize custom selects for the new dropdown
+            initCustomSelects();
+        } else {
+            select.innerHTML = '<option value="">No regions available</option>';
+        }
+    } catch (error) {
+        console.error('Error loading training regions:', error);
+        document.getElementById('training-region-select').innerHTML = '<option value="">Error loading regions</option>';
+    }
+}
+
+// Training mode: Load available modes for a region
+async function loadTrainingModes(countryCode, regionName) {
+    try {
+        const response = await fetch(`/training/${countryCode}/${regionName}/modes`);
+        const data = await response.json();
+        const select = document.getElementById('training-mode-select');
+        select.innerHTML = '';
+        
+        if (data.modes && data.modes.length > 0) {
+            data.modes.forEach(modeName => {
+                const option = document.createElement('option');
+                option.value = modeName;
+                option.textContent = modeName;
+                select.appendChild(option);
+            });
+            // Reinitialize custom selects for the new dropdown
+            initCustomSelects();
+        } else {
+            select.innerHTML = '<option value="">No modes available</option>';
+        }
+    } catch (error) {
+        console.error('Error loading training modes:', error);
+        document.getElementById('training-mode-select').innerHTML = '<option value="">Error loading modes</option>';
+    }
+}
+
+// Training button: Show training setup
+document.getElementById('training-button').addEventListener('click', function() {
+    document.getElementById('game-setup-1').classList.add('hidden');
+    document.getElementById('training-setup').classList.remove('hidden');
+    loadTrainingCountries();
+});
+
+// Training country button: Show region selection
+document.getElementById('training-country-button').addEventListener('click', function() {
+    trainingCountry = document.getElementById('training-country-select').value;
+    if (!trainingCountry) {
+        alert('Please select a country');
+        return;
+    }
+    document.getElementById('training-setup').classList.add('hidden');
+    document.getElementById('training-region-setup').classList.remove('hidden');
+    loadTrainingRegions(trainingCountry);
+});
+
+// Training region button: Show mode selection
+document.getElementById('training-region-button').addEventListener('click', function() {
+    trainingRegion = document.getElementById('training-region-select').value;
+    if (!trainingRegion) {
+        alert('Please select a region');
+        return;
+    }
+    document.getElementById('training-region-setup').classList.add('hidden');
+    document.getElementById('training-mode-setup').classList.remove('hidden');
+    loadTrainingModes(trainingCountry, trainingRegion);
+});
+
+// Training mode button: Start the training game
+document.getElementById('training-mode-button').addEventListener('click', function() {
+    trainingMode = document.getElementById('training-mode-select').value;
+    if (!trainingMode) {
+        alert('Please select a mode');
+        return;
+    }
+    
+    document.getElementById('training-mode-setup').classList.add('hidden');
+    document.getElementById('game-input').classList.remove('hidden');
+    document.getElementById('game-output').classList.remove('hidden');
+    document.getElementById('share').classList.add('hidden');
+    document.getElementById('save').classList.add('hidden');
+
+    // Start the frontend timer
+    startFrontendTimer();
+
+    // Start training game with region path format: country_region_mode
+    const regionPath = `${trainingCountry}_${trainingRegion}_${trainingMode}`;
+    fetch('/start-game', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            country: regionPath,
+            difficulty: 'training'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        gameId = data.gameId;
+        document.getElementById('game-input').classList.remove('hidden');
+        document.getElementById('game-output').classList.remove('hidden');
+        document.getElementById('share').classList.add('hidden');
+        document.getElementById('save').classList.add('hidden');
+        fetch('/get-train-name', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                gameId: gameId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('train-name').innerText = data.result;
+        });
+        fetch('/get-guessed-stops', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                gameId: gameId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            let guessedStops = data.result;
+            updateStationList(guessedStops);
+        });
+    })
+    .catch(error => {
+        console.error('Error starting training game:', error);
+        alert('Error starting training game. Please try again.');
+    });
+});
+
 document.getElementById('country-button').addEventListener('click', function() {
     document.getElementById('game-setup-1').classList.add('hidden');
     document.getElementById('game-setup-2').classList.remove('hidden');

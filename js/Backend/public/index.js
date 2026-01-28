@@ -177,7 +177,7 @@ async function loadTrainingCountries() {
 // Training mode: Load available regions for a country
 async function loadTrainingRegions(countryCode) {
     try {
-        const response = await fetch(`/training/${countryCode}/regions`);
+        const response = await fetch(`/training/${encodeURIComponent(countryCode)}/regions`);
         const data = await response.json();
         const select = document.getElementById('training-region-select');
         select.innerHTML = '';
@@ -192,7 +192,8 @@ async function loadTrainingRegions(countryCode) {
             // Reinitialize custom selects for the new dropdown
             initCustomSelects();
         } else {
-            select.innerHTML = '<option value="">No regions available</option>';
+            select.innerHTML = '<option value="">No regions available for this country</option>';
+            alert('No training regions available for this country yet.');
         }
     } catch (error) {
         console.error('Error loading training regions:', error);
@@ -203,7 +204,7 @@ async function loadTrainingRegions(countryCode) {
 // Training mode: Load available modes for a region
 async function loadTrainingModes(countryCode, regionName) {
     try {
-        const response = await fetch(`/training/${countryCode}/${regionName}/modes`);
+        const response = await fetch(`/training/${encodeURIComponent(countryCode)}/${encodeURIComponent(regionName)}/modes`);
         const data = await response.json();
         const select = document.getElementById('training-mode-select');
         select.innerHTML = '';
@@ -218,7 +219,8 @@ async function loadTrainingModes(countryCode, regionName) {
             // Reinitialize custom selects for the new dropdown
             initCustomSelects();
         } else {
-            select.innerHTML = '<option value="">No modes available</option>';
+            select.innerHTML = '<option value="">No modes available for this region</option>';
+            alert('No training modes available for this region yet.');
         }
     } catch (error) {
         console.error('Error loading training modes:', error);
@@ -236,7 +238,7 @@ document.getElementById('training-button').addEventListener('click', function() 
 // Training country button: Show region selection
 document.getElementById('training-country-button').addEventListener('click', function() {
     trainingCountry = document.getElementById('training-country-select').value;
-    if (!trainingCountry) {
+    if (!trainingCountry || trainingCountry === '') {
         alert('Please select a country');
         return;
     }
@@ -248,7 +250,7 @@ document.getElementById('training-country-button').addEventListener('click', fun
 // Training region button: Show mode selection
 document.getElementById('training-region-button').addEventListener('click', function() {
     trainingRegion = document.getElementById('training-region-select').value;
-    if (!trainingRegion) {
+    if (!trainingRegion || trainingRegion === '') {
         alert('Please select a region');
         return;
     }
@@ -260,7 +262,7 @@ document.getElementById('training-region-button').addEventListener('click', func
 // Training mode button: Start the training game
 document.getElementById('training-mode-button').addEventListener('click', function() {
     trainingMode = document.getElementById('training-mode-select').value;
-    if (!trainingMode) {
+    if (!trainingMode || trainingMode === '') {
         alert('Please select a mode');
         return;
     }
@@ -288,6 +290,9 @@ document.getElementById('training-mode-button').addEventListener('click', functi
     })
     .then(response => response.json())
     .then(data => {
+        if (!data.gameId) {
+            throw new Error('Failed to start game');
+        }
         gameId = data.gameId;
         document.getElementById('game-input').classList.remove('hidden');
         document.getElementById('game-output').classList.remove('hidden');
@@ -324,6 +329,11 @@ document.getElementById('training-mode-button').addEventListener('click', functi
     .catch(error => {
         console.error('Error starting training game:', error);
         alert('Error starting training game. Please try again.');
+        // Reset to initial state
+        document.getElementById('training-mode-setup').classList.remove('hidden');
+        document.getElementById('game-input').classList.add('hidden');
+        document.getElementById('game-output').classList.add('hidden');
+        stopFrontendTimer();
     });
 });
 

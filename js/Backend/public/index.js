@@ -88,6 +88,69 @@ function initCustomSelects() {
     });
 }
 
+// Update an existing custom select after its options have been changed
+function updateCustomSelect(selectElement) {
+    const wrapper = selectElement.parentElement;
+    
+    // If not wrapped yet, initialize it
+    if (!wrapper || !wrapper.classList.contains('custom-select')) {
+        initCustomSelects();
+        return;
+    }
+    
+    // Find the styled div and options list
+    const styled = wrapper.querySelector('.select-styled');
+    const optionsList = wrapper.querySelector('.select-options');
+    
+    if (!styled || !optionsList) return;
+    
+    // Update styled text to show first option
+    styled.textContent = selectElement.options[0] ? selectElement.options[0].text : '';
+    
+    // Clear and rebuild the options list
+    optionsList.innerHTML = '';
+    
+    Array.from(selectElement.options).forEach((option, index) => {
+        const li = document.createElement('li');
+        li.textContent = option.text;
+        li.setAttribute('data-value', option.value);
+        if (index === 0) {
+            li.classList.add('selected');
+        }
+        
+        // Add click event to the new li
+        li.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const value = this.getAttribute('data-value');
+            const text = this.textContent;
+            
+            // Update native select
+            selectElement.value = value;
+            
+            // Trigger change event on native select
+            const event = new Event('change', { bubbles: true });
+            selectElement.dispatchEvent(event);
+            
+            // Update styled select
+            styled.textContent = text;
+            
+            // Update selected class
+            optionsList.querySelectorAll('li').forEach(item => item.classList.remove('selected'));
+            this.classList.add('selected');
+            
+            // Close dropdown
+            styled.classList.remove('active');
+            optionsList.classList.remove('active');
+        });
+        
+        optionsList.appendChild(li);
+    });
+    
+    // Close dropdown if it was open
+    styled.classList.remove('active');
+    optionsList.classList.remove('active');
+}
+
 // Dark mode functionality
 function initDarkMode() {
     const darkModeToggle = document.getElementById('dark-mode-toggle');
@@ -163,14 +226,17 @@ async function loadTrainingCountries() {
                 option.textContent = countryNames[countryCode] || countryCode;
                 select.appendChild(option);
             });
-            // Reinitialize custom selects for the new dropdown
-            initCustomSelects();
+            // Update the custom select wrapper with new options
+            updateCustomSelect(select);
         } else {
             select.innerHTML = '<option value="">No countries available</option>';
+            updateCustomSelect(select);
         }
     } catch (error) {
         console.error('Error loading training countries:', error);
-        document.getElementById('training-country-select').innerHTML = '<option value="">Error loading countries</option>';
+        const select = document.getElementById('training-country-select');
+        select.innerHTML = '<option value="">Error loading countries</option>';
+        updateCustomSelect(select);
     }
 }
 
@@ -189,15 +255,18 @@ async function loadTrainingRegions(countryCode) {
                 option.textContent = regionName;
                 select.appendChild(option);
             });
-            // Reinitialize custom selects for the new dropdown
-            initCustomSelects();
+            // Update the custom select wrapper with new options
+            updateCustomSelect(select);
         } else {
             select.innerHTML = '<option value="">No regions available for this country</option>';
+            updateCustomSelect(select);
             alert('No training regions available for this country yet.');
         }
     } catch (error) {
         console.error('Error loading training regions:', error);
-        document.getElementById('training-region-select').innerHTML = '<option value="">Error loading regions</option>';
+        const select = document.getElementById('training-region-select');
+        select.innerHTML = '<option value="">Error loading regions</option>';
+        updateCustomSelect(select);
     }
 }
 
@@ -216,15 +285,18 @@ async function loadTrainingModes(countryCode, regionName) {
                 option.textContent = modeName;
                 select.appendChild(option);
             });
-            // Reinitialize custom selects for the new dropdown
-            initCustomSelects();
+            // Update the custom select wrapper with new options
+            updateCustomSelect(select);
         } else {
             select.innerHTML = '<option value="">No modes available for this region</option>';
+            updateCustomSelect(select);
             alert('No training modes available for this region yet.');
         }
     } catch (error) {
         console.error('Error loading training modes:', error);
-        document.getElementById('training-mode-select').innerHTML = '<option value="">Error loading modes</option>';
+        const select = document.getElementById('training-mode-select');
+        select.innerHTML = '<option value="">Error loading modes</option>';
+        updateCustomSelect(select);
     }
 }
 

@@ -1,6 +1,7 @@
 const sqlite3 = require('sqlite3').verbose();
 const {v4: uuidv4} = require('uuid');
 const { Database, Train, GameTrain } = require('./game');
+const { trainingRegions } = require('./training-regions');
 const path = require('path');
 
 const archiveDB = process.env.DB_PATH_ARCHIVE || path.join(__dirname, "../../database/games");
@@ -41,7 +42,14 @@ class Game {
         this.starttime = starttime;
         this.time = 0;
         this.running = true;
+        this.region = null;
+        this.mode = null;
     }
+    setRegionMode(region, mode){
+        this.region = region;
+        this.mode = mode;
+    }
+
     updateScore() {
         let accuracy = this.correctGuesses / this.guesses;
         let difficultyMultiplier = 1;
@@ -70,7 +78,7 @@ class Game {
     async startGame() {
         let query = this.buildQuery();
         console.log('SQL Query for selecting train:', query);
-        let [tripId, routeId] = await selectRandTrain(query, this.country, this.db);
+        let [tripId, routeId] = await selectRandTrain(query, this.country, this.db, this.difficulty === 'training');
         let stops = await selectAllStops(tripId, this.db);
         if(stops.length <= 2){
             await this.startGame();
@@ -82,7 +90,25 @@ class Game {
         this.train = new GameTrain(tripId, routeId, trainName, stops);
         createArchiveGame(this.gameId, this);
     }
+    buildTrainingQuery() {
+        let trainingCountry = trainingRegions.find(c => c.country === this.country);
+        if (!trainingCountry) {
+            throw new Error("Invalid country for training");
+        }
+        let trainingRegion = trainingCountry.regions.find(r => r.name === this.region);
+        if (!trainingRegion) {
+            throw new Error("Invalid region for training");
+        }
+        let trainingMode = trainingRegion.selectableModes.find(m => m.mode === this.mode);
+        if (!trainingMode) {
+            throw new Error("Invalid mode for training");
+        }
+        return trainingMode.query;
+    }
     buildQuery() {
+        if (this.difficulty === 'training') {
+            return this.buildTrainingQuery();
+        }
         let query;
         switch (this.country) {
             case 'de':
@@ -198,10 +224,9 @@ async function getTrainNameFromDB(routeId, country, db, tripId) {
     });
     return trainName;
 }
-async function selectRandTrain(query, country, db) {
+async function selectRandTrain(query, country, db, training) {
     let result;
-
-    if (country === 'de' || country === 'at') {
+    if (country === 'de' || country === 'at' || (country === 'ch' && training)) {
         result = await new Promise((resolve, reject) => {
             db.get(query, (err, row) => {
                 if (err) {
@@ -265,11 +290,45 @@ async function selectAllStops(trainId, db) {
 
     return stops;
 }
+async function createGameTraining(regionPath, starttime) {
+    country = regionPath.split('_')[0];
+    region = regionPath.split('_')[1];
+    mode = regionPath.split('_')[2];
+    let db_path = ''
+    switch (country) {
+        case 'de':
+            db_path = process.env.DB_PATH_GERMAN || path.join(__dirname, '../../database/german-db');
+            break;
+        case 'ch':
+            db_path = process.env.DB_PATH_SWISS || path.join(__dirname, '../../database/timetable-gen');
+            break;
+        case 'at':
+            db_path = process.env.DB_PATH_AUSTRIA || path.join(__dirname, '../../database/austria-db');
+            break;
+        case 'nsw':
+            db_path = process.env.DB_PATH_NSW || path.join(__dirname, '../../database/syd-db');
+            break;
+        default:
+            throw new Error("Invalid country");
+    }
+    let db = new Database(db_path);
+    let gameId = createGameID();
+    let game = new Game(gameId, country, 'training', starttime, db.db);
+    game.setRegionMode(region, mode);
+    games.set(gameId, game);
+    console.log('Training Game created with ID:', gameId);
+    await game.startGameTraining(region, mode);
+    return gameId;
+}
+
 
 async function createGame(country, difficulty, starttime) {
     console.log('Creating game with country:', country, 'difficulty:', difficulty, 'starttime:', starttime);
     let gameId = createGameID();
     let db_path = ''
+    if (difficulty == 'training') {
+        return await createGameTraining(country, starttime);
+    }
     switch (country) {
         case 'de':
             db_path = process.env.DB_PATH_GERMAN || path.join(__dirname, '../../database/german-db');

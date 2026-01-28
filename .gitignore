@@ -4,5 +4,7 @@
 /timetable-tmp
 /js/Backend/node_modules
 .env
+.venv/
 tmp/
+py-testing/
 timetables.zip

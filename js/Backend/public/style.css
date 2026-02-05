@@ -143,6 +143,19 @@ body.dark-mode {
     padding: 0;
     margin: 0;
 }
+.create-session-button {
+    position: fixed;
+    top: var(--spacing-lg);
+    right: calc(var(--spacing-lg) + 60px);
+    border-radius: var(--radius-full);
+    width: auto;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1000;
+}
 
 .dark-mode-toggle:hover {
     transform: translateY(-2px) rotate(10deg);
@@ -1006,7 +1019,7 @@ button:disabled {
     max-width: 500px;
     width: 100%;
     animation: slideUp 0.3s ease-out;
-    overflow: hidden;
+    overflow : hidden;
 }
 
 @keyframes slideUp {

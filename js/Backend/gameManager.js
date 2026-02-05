@@ -27,7 +27,7 @@ function getArchiveGame(gameId){
 }
 
 class Game {
-    constructor(gameId, country, difficulty, starttime, db) {
+    constructor(gameId, country, difficulty, starttime, sessionId=null, db) {
         this.gameId = gameId;
         this.country = country;
         this.difficulty = difficulty;
@@ -44,6 +44,7 @@ class Game {
         this.running = true;
         this.region = null;
         this.mode = null;
+        this.sessionId = sessionId;
     }
     setRegionMode(region, mode){
         this.region = region;
@@ -226,7 +227,7 @@ async function getTrainNameFromDB(routeId, country, db, tripId) {
 }
 async function selectRandTrain(query, country, db, training) {
     let result;
-    if (country === 'de' || country === 'at' || (country === 'ch' && training)) {
+    if (country === 'de' || country === 'at' || ((country === 'ch' || country === 'nsw') && training)) {
         result = await new Promise((resolve, reject) => {
             db.get(query, (err, row) => {
                 if (err) {
@@ -290,7 +291,7 @@ async function selectAllStops(trainId, db) {
 
     return stops;
 }
-async function createGameTraining(regionPath, starttime) {
+async function createGameTraining(regionPath, starttime, sessionId=null) {
     let country = regionPath.split('_')[0];
     let region = regionPath.split('_')[1];
     let mode = regionPath.split('_')[2];
@@ -313,7 +314,7 @@ async function createGameTraining(regionPath, starttime) {
     }
     let db = new Database(db_path);
     let gameId = createGameID();
-    let game = new Game(gameId, country, 'training', starttime, db.db);
+    let game = new Game(gameId, country, 'training', starttime, sessionId, db.db);
     game.setRegionMode(region, mode);
     games.set(gameId, game);
     console.log('Training Game created with ID:', gameId);
@@ -322,12 +323,12 @@ async function createGameTraining(regionPath, starttime) {
 }
 
 
-async function createGame(country, difficulty, starttime) {
+async function createGame(country, difficulty, starttime, sessionId=null) {
     console.log('Creating game with country:', country, 'difficulty:', difficulty, 'starttime:', starttime);
     let gameId = createGameID();
     let db_path = ''
     if (difficulty == 'training') {
-        return await createGameTraining(country, starttime);
+        return await createGameTraining(country, starttime, sessionId);
     }
     switch (country) {
         case 'de':
@@ -346,7 +347,7 @@ async function createGame(country, difficulty, starttime) {
             throw new Error("Invalid country");
     }
     let db = new Database(db_path);
-    let game = new Game(gameId, country, difficulty, starttime, db.db);
+    let game = new Game(gameId, country, difficulty, starttime, sessionId, db.db);
     games.set(gameId, game);
     console.log('Game created with ID:', gameId);
     await game.startGame();
@@ -412,14 +413,17 @@ function getScore(gameId) {
     return scoreObj;
 }
 
-async function insertArchiveIntoDB(id, data){
+async function insertArchiveIntoDB(id, game){
+    let data = JSON.stringify(game);
+    let sessionId = game.game.sessionId;
+    console.log('Inserting archive game into DB with session ID:', sessionId);
     let db = new sqlite3.Database(archiveDB, (err) => {
         if (err) {
             return console.error(err.message);
         }
     });
-    let sql = `INSERT INTO games (id, data_json) VALUES (?, ?)`;
-    db.run(sql, [id, data], function(err) {
+    let sql = `INSERT INTO games (id, data_json, session_id) VALUES (?, ?, ?)`;
+    db.run(sql, [id, data, sessionId], function(err) {
         if (err) {
             return console.error(err.message);
         }
@@ -428,8 +432,8 @@ async function insertArchiveIntoDB(id, data){
 }
 function archiveGame(gameId){
     let archiveGame = getArchiveGame(gameId);
-    let data = JSON.stringify(archiveGame);
-    insertArchiveIntoDB(gameId, data);
+    console.log(archiveGame.game.sessionId);
+    insertArchiveIntoDB(gameId, archiveGame);
 }
 async function getArchiveGameFromDB(gameId){
     return new Promise((resolve, reject) => {
@@ -536,6 +540,29 @@ function getTime(gameId){
     let game = getGame(gameId);
     return game.time;
 }
+function getArchiveGamesBySessionId(sessionId){
+    //has to be fetched from the database (no in-memory storage)
+    return new Promise((resolve, reject) => {
+        let db = new sqlite3.Database(archiveDB, (err) => {
+            if (err) {
+                console.error(err.message);
+                reject(err);
+            }
+        });
+        
+        let sql = `SELECT data_json, id FROM games WHERE session_id = ?`;
+        db.all(sql, [sessionId], (err, rows) => {
+            if (err) {
+                console.error(err.message);
+                reject(err);
+            }
+            db.close();
+            let games = rows.map(row => JSON.parse(row.data_json));
+            resolve(games);
+        });
+    });
+}
+    
 module.exports = {
     createGame,
     checkStation,
@@ -555,5 +582,6 @@ module.exports = {
     updateIsRunning,
     isRunning,
     checkGame,
-    getTime
+    getTime,
+    getArchiveGamesBySessionId
 };

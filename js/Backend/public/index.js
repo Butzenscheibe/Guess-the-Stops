@@ -1,8 +1,25 @@
+import { sessionManager } from './session-manager.js';
+
 let gameId;
 let country;
 let hintAmount = 0;
 let frontendTimer = null;
 let gameStartTime = null;
+
+const SESSION_WORDS = [
+  "ash", "oak", "elm", "ivy", "reed", "fern", "moss", "pine",
+  "sun", "sky", "fog", "rain", "snow", "wind", "hail", "ice",
+  "red", "blue", "grey", "gold", "cyan", "teal", "lime", "amber",
+  "rock", "sand", "soil", "clay", "dust", "salt", "iron", "coal",
+  "wolf", "bear", "fox", "hawk", "owl", "crow", "ant", "bee",
+  "bit", "byte", "node", "loop", "link", "path", "flow", "sync",
+  "echo", "ping", "wave", "tone", "beat", "hum", "buzz", "snap",
+  "edge", "core", "root", "leaf", "seed", "bud", "stem", "bark",
+  "mark", "flag", "sign", "tag", "key", "lock", "code", "hash",
+  "run", "step", "jump", "turn", "roll", "drift", "slide", "hold",
+  "calm", "bold", "soft", "sharp", "fast", "slow", "light", "dark"
+];
+
 
 // Custom Dropdown Component
 function initCustomSelects() {
@@ -347,7 +364,7 @@ document.getElementById('training-mode-button').addEventListener('click', functi
 
     // Start the frontend timer
     startFrontendTimer();
-
+    const sessionID = sessionManager.getCurrentSessionId();
     // Start training game with region path format: country_region_mode
     const regionPath = `${trainingCountry}_${trainingRegion}_${trainingMode}`;
     fetch('/start-game', {
@@ -357,7 +374,8 @@ document.getElementById('training-mode-button').addEventListener('click', functi
         },
         body: JSON.stringify({
             country: regionPath,
-            difficulty: 'training'
+            difficulty: 'training',
+            sessionId: sessionID
         })
     })
     .then(response => response.json())
@@ -424,7 +442,7 @@ document.getElementById('difficulty-button').addEventListener('click', function(
 
     // Start the frontend timer
     startFrontendTimer();
-
+    const sessionID = sessionManager.getCurrentSessionId();
     let difficulty = document.getElementById('difficulty-select').value;
     fetch('/start-game', {
         method: 'POST',
@@ -433,7 +451,8 @@ document.getElementById('difficulty-button').addEventListener('click', function(
         },
         body: JSON.stringify({
             country: country,
-            difficulty: difficulty
+            difficulty: difficulty,
+            sessionId: sessionID
         })
     })
     .then(response => response.json())
@@ -594,8 +613,32 @@ function submit() {
             }
         });
 }
+function generateRandomName(length = 2) {
+    let name = '';
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * SESSION_WORDS.length);
+        name += SESSION_WORDS[randomIndex];
+        if (i < length - 1) {
+            name += '-';
+        }
+    }
+    return name;
+}
+async function createSession() {
+    //randomly generate a name
+    let sessionName = generateRandomName(10);
+    //check if the name already exists
+    while(sessionManager.sessionNameExists(sessionName)){
+        sessionName = generateRandomName();
+    }
+    await sessionManager.createSession(sessionName);
+    alert('Session "' + sessionName + '" created! Session ID copied to clipboard.');
+}
 document.getElementById('restart-button').addEventListener('click', function() {
     location.reload();
+});
+document.getElementById('create-session-button').addEventListener('click', function() {
+    createSession();
 });
 document.getElementById('hint').addEventListener('click', function() {
     fetch('/hint', {

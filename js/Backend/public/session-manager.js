@@ -14,18 +14,23 @@ export const sessionManager = {
   },
 
   async createSession(name = '') {
-    fetch('/session/generate?name=' + encodeURIComponent(name))
-        .then(response => response.json())
-        .then(data => {
-            console.log('Session ID:', data.sessionId);
-            this.setCurrentSessionId(data.sessionId);
-            this.addSession(data.sessionId, name);
-        });
+    const response = await fetch('/session/generate?name=' + encodeURIComponent(name));
+    if (!response.ok) {
+      throw new Error('Failed to create session');
+    }
+    const data = await response.json();
+    console.log('Session ID:', data.sessionId);
+    this.setCurrentSessionId(data.sessionId);
+    return this.addSession(data.sessionId, name);
   },
 
 
   // Set current session ID in localStorage
   setCurrentSessionId(sessionId) {
+    if (!sessionId) {
+      localStorage.removeItem(SESSION_ID_KEY);
+      return;
+    }
     localStorage.setItem(SESSION_ID_KEY, sessionId);
   },
 
@@ -68,7 +73,28 @@ export const sessionManager = {
   formatSessionIdShort,
 
   // Format session ID for info display (long version)
-  formatSessionIdLong
+  formatSessionIdLong,
+
+  // Get a display name for a session (fallback to shortened ID)
+  getSessionDisplayName(session) {
+    if (!session) {
+      return 'Unknown session';
+    }
+    const name = (session.name || '').trim();
+    if (name.length > 0) {
+      return name;
+    }
+    return `Session ${formatSessionIdShort(session.id)}`;
+  },
+
+  // Get display name by id from stored sessions
+  getSessionDisplayNameById(sessionId) {
+    if (!sessionId) {
+      return 'No active session';
+    }
+    const session = this.getAllSessions().find(s => s.id === sessionId);
+    return this.getSessionDisplayName(session);
+  }
 };
 
 export default sessionManager;

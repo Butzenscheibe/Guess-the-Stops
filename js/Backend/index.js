@@ -93,7 +93,7 @@ app.get('/sessions/games', async (req, res) => {
         if (!sessionId) {
             return res.status(400).json({ error: 'Session ID is required' });
         }
-        if (!sessionService.sessionExists(sessionId)) {
+        if (!await sessionService.sessionExists(sessionId)) {
             return res.status(404).json({ error: 'Session not found' });
         }
         let sessions = await getArchiveGamesBySessionId(sessionId);

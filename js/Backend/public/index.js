@@ -1,4 +1,5 @@
 import { sessionManager } from './session-manager.js';
+import { t, applyI18n, getLocale, setLocale } from './i18n.js';
 
 let gameId;
 let country;
@@ -105,6 +106,75 @@ function initCustomSelects() {
     });
 }
 
+function initLanguageSelector() {
+    const languageSelect = document.getElementById('language-select');
+    if (!languageSelect) return;
+
+    languageSelect.value = getLocale();
+
+    languageSelect.addEventListener('change', (event) => {
+        setLocale(event.target.value);
+        applyI18n();
+        relocalizeSelectOptions();
+        applyDynamicDefaults();
+        refreshCurrentSessionInfo();
+        document.querySelectorAll('select').forEach(select => {
+            updateCustomSelect(select);
+        });
+    });
+
+    updateCustomSelect(languageSelect);
+}
+
+function relocalizeSelectOptions() {
+    const countrySelect = document.getElementById('country-select');
+    if (countrySelect) {
+        Array.from(countrySelect.options).forEach(option => {
+            if (option.value) {
+                const translated = t(`country.${option.value}`);
+                option.textContent = translated.startsWith('country.') ? option.value : translated;
+            }
+        });
+    }
+
+    const difficultySelect = document.getElementById('difficulty-select');
+    if (difficultySelect) {
+        Array.from(difficultySelect.options).forEach(option => {
+            if (option.value) {
+                const translated = t(`difficulty.${option.value}`);
+                option.textContent = translated.startsWith('difficulty.') ? option.value : translated;
+            }
+        });
+    }
+
+    const trainingCountrySelect = document.getElementById('training-country-select');
+    if (trainingCountrySelect) {
+        Array.from(trainingCountrySelect.options).forEach(option => {
+            if (option.value) {
+                const translated = t(`country.${option.value}`);
+                option.textContent = translated.startsWith('country.') ? option.value : translated;
+            }
+        });
+    }
+}
+
+function applyDynamicDefaults() {
+    if (!gameId) {
+        const scoreEl = document.getElementById('score');
+        const timeEl = document.getElementById('time');
+        const resultEl = document.getElementById('result');
+        if (scoreEl) {
+            scoreEl.innerText = t('game.scoreLabel', { score: '--' });
+        }
+        if (timeEl) {
+            timeEl.innerText = t('game.timeLabel', { time: '--:--:--' });
+        }
+        if (resultEl) {
+            resultEl.innerText = t('game.waiting');
+        }
+    }
+}
+
 // Update an existing custom select after its options have been changed
 function updateCustomSelect(selectElement) {
     const wrapper = selectElement.parentElement;
@@ -121,8 +191,10 @@ function updateCustomSelect(selectElement) {
     
     if (!styled || !optionsList) return;
     
-    // Update styled text to show first option
-    styled.textContent = selectElement.options[0] ? selectElement.options[0].text : '';
+    // Update styled text to show current selection
+    styled.textContent = selectElement.options[selectElement.selectedIndex]
+        ? selectElement.options[selectElement.selectedIndex].text
+        : '';
     
     // Clear and rebuild the options list
     optionsList.innerHTML = '';
@@ -131,7 +203,7 @@ function updateCustomSelect(selectElement) {
         const li = document.createElement('li');
         li.textContent = option.text;
         li.setAttribute('data-value', option.value);
-        if (index === 0) {
+        if (index === selectElement.selectedIndex) {
             li.classList.add('selected');
         }
         
@@ -187,12 +259,26 @@ function initDarkMode() {
 // Initialize on page load
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
+        applyI18n();
         initDarkMode();
         initCustomSelects();
+        relocalizeSelectOptions();
+        initLanguageSelector();
+        initSessionUI();
+        initSessionModal();
+        initNavButtons();
+        applyDynamicDefaults();
     });
 } else {
+    applyI18n();
     initDarkMode();
     initCustomSelects();
+    relocalizeSelectOptions();
+    initLanguageSelector();
+    initSessionUI();
+    initSessionModal();
+    initNavButtons();
+    applyDynamicDefaults();
 }
 
 function startFrontendTimer() {
@@ -205,7 +291,7 @@ function startFrontendTimer() {
         const seconds = totalSeconds % 60;
         
         const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        document.getElementById('time').innerText = `Time: ${timeStr}`;
+        document.getElementById('time').innerText = t('game.timeLabel', { time: timeStr });
     }, 1000);
 }
 
@@ -235,10 +321,10 @@ async function loadTrainingCountries() {
                 option.value = countryCode;
                 // Map country codes to full names
                 const countryNames = {
-                    'ch': 'Switzerland',
-                    'de': 'Germany',
-                    'at': 'Austria',
-                    'nsw': 'New South Wales, Australia'
+                    'ch': t('country.ch'),
+                    'de': t('country.de'),
+                    'at': t('country.at'),
+                    'nsw': t('country.nsw')
                 };
                 option.textContent = countryNames[countryCode] || countryCode;
                 select.appendChild(option);
@@ -246,13 +332,13 @@ async function loadTrainingCountries() {
             // Update the custom select wrapper with new options
             updateCustomSelect(select);
         } else {
-            select.innerHTML = '<option value="">No countries available</option>';
+            select.innerHTML = `<option value="">${t('game.noCountries')}</option>`;
             updateCustomSelect(select);
         }
     } catch (error) {
         console.error('Error loading training countries:', error);
         const select = document.getElementById('training-country-select');
-        select.innerHTML = '<option value="">Error loading countries</option>';
+        select.innerHTML = `<option value="">${t('game.errorCountries')}</option>`;
         updateCustomSelect(select);
     }
 }
@@ -275,14 +361,14 @@ async function loadTrainingRegions(countryCode) {
             // Update the custom select wrapper with new options
             updateCustomSelect(select);
         } else {
-            select.innerHTML = '<option value="">No regions available for this country</option>';
+            select.innerHTML = `<option value="">${t('game.noRegions')}</option>`;
             updateCustomSelect(select);
-            alert('No training regions available for this country yet.');
+            alert(t('game.alertNoTrainingRegions'));
         }
     } catch (error) {
         console.error('Error loading training regions:', error);
         const select = document.getElementById('training-region-select');
-        select.innerHTML = '<option value="">Error loading regions</option>';
+        select.innerHTML = `<option value="">${t('game.errorRegions')}</option>`;
         updateCustomSelect(select);
     }
 }
@@ -305,14 +391,14 @@ async function loadTrainingModes(countryCode, regionName) {
             // Update the custom select wrapper with new options
             updateCustomSelect(select);
         } else {
-            select.innerHTML = '<option value="">No modes available for this region</option>';
+            select.innerHTML = `<option value="">${t('game.noModes')}</option>`;
             updateCustomSelect(select);
-            alert('No training modes available for this region yet.');
+            alert(t('game.alertNoTrainingModes'));
         }
     } catch (error) {
         console.error('Error loading training modes:', error);
         const select = document.getElementById('training-mode-select');
-        select.innerHTML = '<option value="">Error loading modes</option>';
+        select.innerHTML = `<option value="">${t('game.errorModes')}</option>`;
         updateCustomSelect(select);
     }
 }
@@ -328,7 +414,7 @@ document.getElementById('training-button').addEventListener('click', function() 
 document.getElementById('training-country-button').addEventListener('click', function() {
     trainingCountry = document.getElementById('training-country-select').value;
     if (!trainingCountry || trainingCountry === '') {
-        alert('Please select a country');
+        alert(t('game.alertSelectCountry'));
         return;
     }
     document.getElementById('training-setup').classList.add('hidden');
@@ -340,7 +426,7 @@ document.getElementById('training-country-button').addEventListener('click', fun
 document.getElementById('training-region-button').addEventListener('click', function() {
     trainingRegion = document.getElementById('training-region-select').value;
     if (!trainingRegion || trainingRegion === '') {
-        alert('Please select a region');
+        alert(t('game.alertSelectRegion'));
         return;
     }
     document.getElementById('training-region-setup').classList.add('hidden');
@@ -352,7 +438,7 @@ document.getElementById('training-region-button').addEventListener('click', func
 document.getElementById('training-mode-button').addEventListener('click', function() {
     trainingMode = document.getElementById('training-mode-select').value;
     if (!trainingMode || trainingMode === '') {
-        alert('Please select a mode');
+        alert(t('game.alertSelectMode'));
         return;
     }
     
@@ -418,7 +504,7 @@ document.getElementById('training-mode-button').addEventListener('click', functi
     })
     .catch(error => {
         console.error('Error starting training game:', error);
-        alert('Error starting training game. Please try again.');
+        alert(t('game.alertTrainingStartFailed'));
         // Reset to initial state
         document.getElementById('training-mode-setup').classList.remove('hidden');
         document.getElementById('game-input').classList.add('hidden');
@@ -502,9 +588,10 @@ document.getElementById('user-input').addEventListener('keypress', function(e) {
     }
 });
 document.getElementById('share').addEventListener('click', function() {
-    let url = window.location.href + 'shared-result.html?id=' + gameId;
-    navigator.clipboard.writeText(url);
-    alert('Link kopiert!');
+    const url = new URL('/shared-result.html', window.location.origin);
+    url.searchParams.set('id', gameId);
+    navigator.clipboard.writeText(url.toString());
+    alert(t('game.linkCopied'));
 });
 document.getElementById('cancel-button').addEventListener('click', function() {
     fetch('/cancel-game', {
@@ -520,7 +607,7 @@ document.getElementById('cancel-button').addEventListener('click', function() {
     .then(data => {
         if (data.result) {
             updateScore();
-            document.getElementById('result').innerText = 'Spiel abgebrochen';
+            document.getElementById('result').innerText = t('game.resultCancelled');
             updateStationList(data.result);
             updateTime();
             afterGame();
@@ -555,63 +642,65 @@ function updateTime(){
                 if(seconds < 10){
                     seconds = "0" + seconds;
                 }
-                document.getElementById('time').innerText = hours + ':' + minutes + ':' + seconds;
+                const timeStr = hours + ':' + minutes + ':' + seconds;
+                document.getElementById('time').innerText = t('game.timeLabel', { time: timeStr });
             }
         });
 }
 
-function submit() {
-    var userInput = document.getElementById('user-input').value;
+async function submit() {
+    const userInput = document.getElementById('user-input').value;
     document.getElementById('user-input').value = '';
-        fetch('/check-station', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            gameId: gameId,
-            station: userInput
-        })
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.result) {
-                document.getElementById('result').innerText = 'Richtig!';
-            } else {
-                document.getElementById('result').innerText = 'Falsch!';
-            }
+
+    try {
+        const checkResponse = await fetch('/check-station', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                gameId: gameId,
+                station: userInput
+            })
         });
-    fetch('/get-guessed-stops', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            gameId: gameId
-        })
-    })
-        .then(response => response.json())
-        .then(data => {
-            let guessedStops = data.result;
-            updateStationList(guessedStops);
+        const checkData = await checkResponse.json();
+        if (checkData.result) {
+            document.getElementById('result').innerText = t('game.resultCorrect');
+        } else {
+            document.getElementById('result').innerText = t('game.resultWrong');
+        }
+
+        const guessedResponse = await fetch('/get-guessed-stops', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                gameId: gameId
+            })
         });
-    fetch('/check-win', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            gameId: gameId
-        })
-    }).then(response => response.json())
-        .then(data => {
-            if (data.result) {
-                updateScore();
-                document.getElementById('result').innerText = 'Gewonnen!';
-                afterGame();
-                updateTime();
-            }
+        const guessedData = await guessedResponse.json();
+        updateStationList(guessedData.result || []);
+
+        const winResponse = await fetch('/check-win', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                gameId: gameId
+            })
         });
+        const winData = await winResponse.json();
+        if (winData.result) {
+            updateScore();
+            document.getElementById('result').innerText = t('game.resultWon');
+            afterGame();
+            updateTime();
+        }
+    } catch (error) {
+        console.error('Error submitting station:', error);
+    }
 }
 function generateRandomName(length = 2) {
     let name = '';
@@ -624,15 +713,134 @@ function generateRandomName(length = 2) {
     }
     return name;
 }
-async function createSession() {
-    //randomly generate a name
-    let sessionName = generateRandomName(10);
-    //check if the name already exists
-    while(sessionManager.sessionNameExists(sessionName)){
-        sessionName = generateRandomName();
+function getUniqueSessionName(preferredName) {
+    let sessionName = (preferredName || '').trim();
+    if (!sessionName) {
+        sessionName = generateRandomName(2);
     }
-    await sessionManager.createSession(sessionName);
-    alert('Session "' + sessionName + '" created! Session ID copied to clipboard.');
+    while (sessionManager.sessionNameExists(sessionName)) {
+        sessionName = generateRandomName(2);
+    }
+    return sessionName;
+}
+
+function populateSessionSelect() {
+    const select = document.getElementById('session-select');
+    if (!select) return;
+
+    const sessions = sessionManager.getSessions();
+    const currentSessionId = sessionManager.getCurrentSessionId();
+
+    select.innerHTML = '';
+
+    const emptyOption = document.createElement('option');
+    emptyOption.value = '';
+    emptyOption.textContent = t('session.none');
+    select.appendChild(emptyOption);
+
+    sessions.forEach(session => {
+        const option = document.createElement('option');
+        option.value = session.id;
+        option.textContent = sessionManager.getSessionDisplayName(session);
+        select.appendChild(option);
+    });
+
+    if (currentSessionId && sessions.some(s => s.id === currentSessionId)) {
+        select.value = currentSessionId;
+    } else if (!currentSessionId && sessions.length > 0) {
+        const lastSession = sessions[sessions.length - 1];
+        select.value = lastSession.id;
+        sessionManager.setCurrentSessionId(lastSession.id);
+    } else {
+        select.value = '';
+    }
+
+    updateCustomSelect(select);
+    refreshCurrentSessionInfo();
+}
+
+function refreshCurrentSessionInfo() {
+    const info = document.getElementById('current-session-info');
+    if (!info) return;
+    const currentSessionId = sessionManager.getCurrentSessionId();
+    if (!currentSessionId) {
+        info.textContent = t('session.none');
+        return;
+    }
+    const name = sessionManager.getSessionDisplayNameById(currentSessionId);
+    info.textContent = name;
+}
+
+function setActiveSession(sessionId) {
+    if (!sessionId) {
+        sessionManager.setCurrentSessionId('');
+        refreshCurrentSessionInfo();
+        return;
+    }
+    sessionManager.setCurrentSessionId(sessionId);
+    refreshCurrentSessionInfo();
+}
+
+async function createSession() {
+    const input = document.getElementById('session-name-input');
+    const preferredName = input ? input.value : '';
+    const sessionName = getUniqueSessionName(preferredName);
+
+    try {
+        await sessionManager.createSession(sessionName);
+        if (input) {
+            input.value = '';
+        }
+        populateSessionSelect();
+        alert(t('session.created', { name: sessionName }));
+    } catch (error) {
+        console.error('Failed to create session:', error);
+        alert(t('session.createFailed'));
+    }
+}
+
+function initSessionUI() {
+    const select = document.getElementById('session-select');
+    if (!select) return;
+
+    populateSessionSelect();
+
+    select.addEventListener('change', (event) => {
+        setActiveSession(event.target.value);
+    });
+}
+
+function initSessionModal() {
+    const modal = document.getElementById('session-modal');
+    const openBtn = document.getElementById('open-session-modal');
+    const closeBtn = document.getElementById('session-modal-close');
+
+    if (!modal || !openBtn || !closeBtn) return;
+
+    openBtn.addEventListener('click', () => {
+        modal.classList.add('show');
+    });
+
+    closeBtn.addEventListener('click', () => {
+        modal.classList.remove('show');
+    });
+
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.classList.remove('show');
+        }
+    });
+}
+
+function initNavButtons() {
+    document.querySelectorAll('[data-href]').forEach(button => {
+        button.addEventListener('click', () => {
+            const href = button.getAttribute('data-href');
+            if (href) {
+                window.location.href = href;
+            }
+        });
+    });
 }
 document.getElementById('restart-button').addEventListener('click', function() {
     location.reload();
@@ -686,7 +894,7 @@ window.onblur = function() {
         .then(data => {
             if (data.result) {
                 updateScore();
-                document.getElementById('result').innerText = 'Spiel abgebrochen';
+                document.getElementById('result').innerText = t('game.resultCancelled');
                 updateStationList(data.result);
                 afterGame();
             }
@@ -704,7 +912,7 @@ document.getElementById('save-button').addEventListener('click', function() {
 
     let name = document.getElementById('save-name').value;
     if (name === '') {
-        alert('Bitte geben Sie einen Namen ein!');
+        alert(t('game.alertNameRequired'));
         return;
     }
     document.getElementById('save-button').classList.add('hidden');
@@ -770,7 +978,10 @@ function updateScore() {
         .then(data => {
             let score = data.result.score;
             let unDeducedScore = data.result.unDeducedScore;
-            document.getElementById('score').innerText = 'Score: ' + score + ' Punkte (' + unDeducedScore + ' Punkte ohne Abzüge)';
+            document.getElementById('score').innerText = t('game.scoreDetail', {
+                score: score,
+                undeduced: unDeducedScore
+            });
         });
 }
 window.onload = function() {
@@ -789,8 +1000,15 @@ function updateLeaderboard(){
             leaderboard.innerHTML = '';
             top.forEach((entry, index) => {
                 let li = document.createElement('li');
-                let url = window.location.href + 'shared-result.html?id=' + entry.id;
-                li.innerHTML = '<a href="' + url + '">' + entry.name + ' - ' + entry.score + ' Punkte</a>';
+                const url = new URL('/shared-result.html', window.location.origin);
+                url.searchParams.set('id', entry.id);
+                const pointsText = t('leaderboard.points', { score: entry.score });
+                const button = document.createElement('button');
+                button.className = 'nav-button nav-button--list';
+                button.type = 'button';
+                button.setAttribute('data-href', url.toString());
+                button.textContent = `${entry.name} - ${pointsText}`;
+                li.appendChild(button);
                 leaderboard.appendChild(li);
             });
         });

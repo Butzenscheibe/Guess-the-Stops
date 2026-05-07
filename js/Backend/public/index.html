@@ -7,61 +7,117 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-    <!-- Dark Mode Toggle -->
-    <button id="dark-mode-toggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
-        <svg class="sun-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
-        </svg>
-        <svg class="moon-icon hidden" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
-        </svg>
-    </button>
+    <header class="app-header">
+        <div class="app-header-content">
+            <div class="brand" data-i18n="game.title">Guess the Stations</div>
+            <div class="nav-group">
+                <button class="nav-button nav-button--primary" type="button" data-href="/index.html" data-i18n="nav.home">Home</button>
+                <button class="nav-button" type="button" data-href="/session-history.html" data-i18n="nav.sessions">Sessions</button>
+            </div>
+            <div class="app-header-actions">
+                <div class="language-select-wrapper">
+                    <label for="language-select" data-i18n="language.label">Language</label>
+                    <select id="language-select">
+                        <option value="en">English</option>
+                        <option value="de">Deutsch</option>
+                        <option value="fr">Français</option>
+                    </select>
+                </div>
+                <button id="dark-mode-toggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                    <svg class="sun-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
+                    </svg>
+                    <svg class="moon-icon hidden" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
     
     <!-- Main Content Wrapper -->
     <div class="content-wrapper">
         <div class="game-container">
-            <h1>Guess the Stations</h1>
+            <div class="page-header">
+                <h1 data-i18n="game.title">Guess the Stations</h1>
+            </div>
+
+            <div class="game-stack">
+                <div class="session-widget" id="session-widget">
+                    <div class="session-widget-info">
+                        <span class="session-widget-label" data-i18n="session.current">Current session</span>
+                        <span class="session-widget-value" id="current-session-info">No active session</span>
+                    </div>
+                    <button class="session-button" id="open-session-modal" data-i18n="session.manage">Manage</button>
+                </div>
+
+                <div class="main-game" id="main-game">
             
             <div id="game-setup-1">
-                <label for="country-select">Select Country</label>
+                <label for="country-select" data-i18n="game.selectCountry">Select Country</label>
                 <select id="country-select">
-                    <option value="ch">Switzerland</option>
-                    <option value="de">Germany</option>
-                    <option value="nsw">New South Wales, Australia</option>
-                    <option value="at">Austria</option>
+                    <option value="ch" data-i18n="country.ch">Switzerland</option>
+                    <option value="de" data-i18n="country.de">Germany</option>
+                    <option value="nsw" data-i18n="country.nsw">New South Wales, Australia</option>
+                    <option value="at" data-i18n="country.at">Austria</option>
                 </select>
-                <button id="country-button">Continue</button>
-                <button id="training-button">Training</button>
+                <button id="country-button" data-i18n="game.continue">Continue</button>
+                <button id="training-button" data-i18n="game.training">Training</button>
             </div>
             
             <div id="game-setup-2" class="hidden">
-                <label for="difficulty-select">Select Difficulty</label>
+                <label for="difficulty-select" data-i18n="game.selectDifficulty">Select Difficulty</label>
                 <select id="difficulty-select">
-                    <option value="easy">Easy</option>
-                    <option value="medium">Medium</option>
-                    <option value="hard">Hard</option>
+                    <option value="easy" data-i18n="difficulty.easy">Easy</option>
+                    <option value="medium" data-i18n="difficulty.medium">Medium</option>
+                    <option value="hard" data-i18n="difficulty.hard">Hard</option>
                 </select>
-                <button id="difficulty-button">Start Game</button>
+                <button id="difficulty-button" data-i18n="game.startGame">Start Game</button>
+            </div>
+            
+            <div id="training-setup" class="hidden">
+                <label for="training-country-select" data-i18n="game.selectTrainingCountry">Select Country</label>
+                <select id="training-country-select">
+                    <option value="" data-i18n="game.loading">Loading...</option>
+                </select>
+                <button id="training-country-button" data-i18n="game.continue">Continue</button>
+            </div>
+            
+            <div id="training-region-setup" class="hidden">
+                <label for="training-region-select" data-i18n="game.selectTrainingRegion">Select Region</label>
+                <select id="training-region-select">
+                    <option value="" data-i18n="game.loading">Loading...</option>
+                </select>
+                <button id="training-region-button" data-i18n="game.continue">Continue</button>
+            </div>
+            
+            <div id="training-mode-setup" class="hidden">
+                <label for="training-mode-select" data-i18n="game.selectTrainingMode">Select Mode</label>
+                <select id="training-mode-select">
+                    <option value="" data-i18n="game.loading">Loading...</option>
+                </select>
+                <button id="training-mode-button" data-i18n="game.startTraining">Start Training</button>
             </div>
             
             <div id="game-input" class="hidden">
-                <label for="user-input" id="user-input-label">Enter Station Name</label>
-                <input type="text" id="user-input" placeholder="Type station name...">
+                <label for="user-input" id="user-input-label" data-i18n="game.enterStation">Enter Station Name</label>
+                <input type="text" id="user-input" placeholder="Type station name..." data-i18n-placeholder="game.stationPlaceholder">
                 <div class="button-grid">
-                    <button id="submit-button">Submit</button>
-                    <button type="button" id="hint">Hint (-20%)</button>
-                    <button type="button" id="cancel-button">Cancel</button>
-                    <button type="button" id="restart-button">Restart</button>
-                    <button type="button" id="share">Share</button>
-                    <button type="button" id="save">Save Result</button>
+                    <button id="submit-button" data-i18n="game.submit">Submit</button>
+                    <button type="button" id="hint" data-i18n="game.hint">Hint (-20%)</button>
+                    <button type="button" id="cancel-button" data-i18n="game.cancel">Cancel</button>
+                    <button type="button" id="restart-button" data-i18n="game.restart">Restart</button>
+                    <button type="button" id="share" data-i18n="game.share">Share</button>
+                    <button type="button" id="save" data-i18n="game.saveResult">Save Result</button>
                 </div>
             </div>
             
             <div id="save-input" class="hidden">
-                <h2>Save Your Result</h2>
-                <label for="save-name">Your Name</label>
-                <input type="text" id="save-name" placeholder="Enter your name...">
-                <button id="save-button">Save Score</button>
+                <h2 data-i18n="game.saveTitle">Save Your Result</h2>
+                <label for="save-name" data-i18n="game.saveName">Your Name</label>
+                <input type="text" id="save-name" placeholder="Enter your name..." data-i18n-placeholder="game.savePlaceholder">
+                <button id="save-button" data-i18n="game.saveScore">Save Score</button>
             </div>
             
             <div id="game-output" class="hidden">
@@ -73,27 +129,29 @@
                 <p id="result">Waiting...</p>
                 <ul id="stop-list" class="stop-list"></ul>
             </div>
+                </div>
+            </div>
         </div>
         
         <div class="game-container" id="highscores">
-            <h1>Leaderboard</h1>
+            <h1 data-i18n="leaderboard.title">Leaderboard</h1>
             <ul id="leaderboard" class="stop-list"></ul>
         </div>
     </div>
     <!-- Feedback Section -->
     <div class="feedback-section">
-        <h2>💬 Share Your Feedback</h2>
-        <p class="feedback-description">Help us improve Guess the Stations! Your feedback is valuable.</p>
+        <h2 data-i18n="feedback.title">💬 Share Your Feedback</h2>
+        <p class="feedback-description" data-i18n="feedback.desc">Help us improve Guess the Stations! Your feedback is valuable.</p>
         <form id="feedbackForm" class="feedback-form">
             <div class="form-group">
-                <label for="feedback-name">Name</label>
-                <input type="text" id="feedback-name" name="name" placeholder="Enter your name" required>
+                <label for="feedback-name" data-i18n="feedback.name">Name</label>
+                <input type="text" id="feedback-name" name="name" placeholder="Enter your name" required data-i18n-placeholder="feedback.namePlaceholder">
             </div>
             <div class="form-group">
-                <label for="feedback-text">Feedback</label>
-                <textarea id="feedback-text" name="feedback" rows="6" placeholder="Share your thoughts about the game..." required></textarea>
+                <label for="feedback-text" data-i18n="feedback.text">Feedback</label>
+                <textarea id="feedback-text" name="feedback" rows="6" placeholder="Share your thoughts about the game..." required data-i18n-placeholder="feedback.textPlaceholder"></textarea>
             </div>
-            <button type="submit" class="submit-btn">Submit Feedback</button>
+            <button type="submit" class="submit-btn" data-i18n="feedback.submit">Submit Feedback</button>
         </form>
         <div id="feedbackStatus" class="feedback-status"></div>
     </div>
@@ -107,24 +165,54 @@
     <div id="update-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modal-title">🎉 What's New in Guess the Stations!</h2>
+                <h2 id="modal-title" data-i18n="update.title">🎉 What's New in Guess the Stations!</h2>
             </div>
             <div class="modal-body">
                 <ul class="update-list">
-                    <li>🇦🇺 <strong>New Country:</strong> NSW, Australia added to the game!</li>
-                    <li>🇦🇹 <strong>New Country:</strong> Austria now available!</li>
-                    <li>🇨🇭 <strong>Updated:</strong> Swiss timetable updated to 2026</li>
+                    <li data-i18n="update.training">⏫ Training: New training mode implemented</li>
+                    <li data-i18n="update.newCountry">🇦🇺 🇦🇹 New Country: NSW, Australia & Austria added to the game!</li>
+                    <li data-i18n="update.updated">🇨🇭 Updated: Swiss timetable updated to 2026</li>
                 </ul>
                 <div class="modal-checkbox">
                     <input type="checkbox" id="dont-show-again">
-                    <label for="dont-show-again">Don't show this again</label>
+                    <label for="dont-show-again" data-i18n="update.dontShow">Don't show this again</label>
                 </div>
             </div>
             <div class="modal-footer">
-                <button id="modal-close-btn" class="modal-btn">Got it!</button>
+                <button id="modal-close-btn" class="modal-btn" data-i18n="update.gotIt">Got it!</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="session-modal" class="modal session-modal" role="dialog" aria-modal="true" aria-labelledby="session-modal-title">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="session-modal-title" data-i18n="session.title">Session Manager</h2>
+            </div>
+            <div class="modal-body">
+                <div class="session-controls">
+                    <div class="form-group">
+                        <label for="session-name-input" data-i18n="session.nameLabel">Session Name (optional)</label>
+                        <input type="text" id="session-name-input" placeholder="Leave empty for auto-name" data-i18n-placeholder="session.namePlaceholder">
+                    </div>
+                    <button class="session-button" id="create-session-button" data-i18n="session.create">Create Session</button>
+                </div>
+                <div class="session-select-row">
+                    <label for="session-select" data-i18n="session.activeLabel">Active Session</label>
+                    <select id="session-select">
+                        <option value="" data-i18n="session.none">No active session</option>
+                    </select>
+                </div>
+                <div class="session-modal-actions">
+                    <button class="nav-button" type="button" data-href="/session-history.html" data-i18n="session.past">View past games</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="session-modal-close" class="modal-btn" data-i18n="session.close">Close</button>
             </div>
         </div>
     </div>
     
-    <script src="index.js"></script>
+    <script type="module" src="index.js"></script>
+    <script type="module" src="session-manager.js"></script>
 </body>

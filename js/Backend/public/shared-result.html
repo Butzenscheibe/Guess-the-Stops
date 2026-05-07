@@ -7,24 +7,83 @@
     <meta name="theme-color" content="#3b82f6">
     <title>Shared Result - Guess the Stations</title>
     <link rel="stylesheet" href="./style.css">
-    <script src="shared-result.js"></script>
+    <script type="module" src="shared-result.js"></script>
 </head>
 <body>
-    <div class="game-container" id="game-container">
-        <h1>Guess the Stations</h1>
-        <h2>Game Result</h2>
-        <div class="stats-grid">
-            <p id="score">Score: --</p>
-            <p id="name">Player: --</p>
+    <header class="app-header">
+        <div class="app-header-content">
+            <div class="brand" data-i18n="game.title">Guess the Stations</div>
+            <div class="nav-group">
+                <button class="nav-button" type="button" data-href="/index.html" data-i18n="nav.home">Home</button>
+                <button class="nav-button" type="button" data-href="/session-history.html" data-i18n="nav.sessions">Sessions</button>
+            </div>
+            <div class="app-header-actions">
+                <div class="language-select-wrapper">
+                    <label for="language-select" data-i18n="language.label">Language</label>
+                    <select id="language-select">
+                        <option value="en">English</option>
+                        <option value="de">Deutsch</option>
+                        <option value="fr">Français</option>
+                    </select>
+                </div>
+                <button id="dark-mode-toggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+                    <svg class="sun-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
+                    </svg>
+                    <svg class="moon-icon hidden" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                    </svg>
+                </button>
+            </div>
         </div>
-        <div id="stop-div">
-            <div id="guesses">
-                <h3>Your Guesses</h3>
+    </header>
+    <div class="game-container shared-result" id="game-container">
+        <div class="shared-header">
+            <div>
+                <h1 data-i18n="shared.title">Guess the Stations</h1>
+                <h2 data-i18n="shared.subtitle">Shared Game Result</h2>
+            </div>
+        </div>
+
+        <div class="shared-metrics">
+            <div class="metric-card">
+                <span id="label-train" data-i18n="shared.train">Train</span>
+                <strong id="train-name">--</strong>
+            </div>
+            <div class="metric-card">
+                <span id="label-country" data-i18n="shared.country">Country</span>
+                <strong id="country">--</strong>
+            </div>
+            <div class="metric-card">
+                <span id="label-difficulty" data-i18n="shared.difficulty">Difficulty</span>
+                <strong id="difficulty">--</strong>
+            </div>
+            <div class="metric-card">
+                <span id="label-score" data-i18n="shared.score">Score</span>
+                <strong id="score">--</strong>
+            </div>
+            <div class="metric-card">
+                <span id="label-time" data-i18n="shared.time">Time</span>
+                <strong id="time">--</strong>
+            </div>
+            <div class="metric-card">
+                <span id="label-accuracy" data-i18n="shared.accuracy">Accuracy</span>
+                <strong id="accuracy">--</strong>
+            </div>
+        </div>
+
+        <div class="shared-lists">
+            <div>
+                <h3 data-i18n="shared.guesses">Your Guesses</h3>
                 <ul id="stop-list" class="stop-list"></ul>
             </div>
-            <div id="correct">
-                <h3>Correct Answers</h3>
+            <div>
+                <h3 data-i18n="shared.correct">Correct Guesses</h3>
                 <ul id="correct-list" class="stop-list"></ul>
+            </div>
+            <div>
+                <h3 data-i18n="shared.stops">All Stops</h3>
+                <ul id="all-stops-list" class="stop-list"></ul>
             </div>
         </div>
     </div>

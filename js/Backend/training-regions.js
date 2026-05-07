@@ -64,7 +64,7 @@ const trainingRegions = [
   '175.TA.91-10-A-j26-1.9.H',
   '373.TA.91-17-A-j26-1.5.H',
   '777.TA.91-24-j26-1.57.H'
-);`
+) order by random() limit 1;`
           },
           // Individual lines
           {
@@ -198,6 +198,97 @@ const trainingRegions = [
           {
             mode: "S24",
             query: `SELECT trip_id, route_id FROM trips WHERE trip_id = '777.TA.91-24-j26-1.57.H'`
+          }
+        ]
+      }
+    ]
+  },
+  {
+    country: "nsw",
+    regions: [
+      {
+        name: "Sydney Trains",
+        selectableModes: [
+          {
+            mode: "Sydney-Trains-Total",
+            query: `SELECT trip_id, route_id FROM trips WHERE trip_id IN (
+              '172F.487.143.48.A.8.88357991',
+              '52AF.974.155.4.M.4.88566216',
+              '158J.1989.100.16.A.8.89040683',
+              '71BR.1346.154.128.M.4.88362462',
+              '609M.487.143.4.T.8.88359675',
+              '86-H.1346.154.128.A.8.88363531',
+              '143R.487.143.32.A.8.88357843',
+              '162M.1978.102.16.A.8.87903843',
+              '137P.974.155.16.A.8.88566437',
+              '60-C.487.143.32.M.8.88358071',
+              '18-D.487.143.4.B.8.88360597',
+              '92-B.487.143.32.A.8.88359247',
+              '14-P.1346.154.2.B.8.88364731',
+              '64-E.974.155.60.M.8.88565190',
+              '611G.974.155.64.T.8.88590700'
+            ) order by random() limit 1;`
+          },
+
+          {
+            mode: "T1 City-Richmond",
+            query: `SELECT trip_id, route_id FROM trips WHERE trip_id = '172F.487.143.48.A.8.88357991'`
+          },
+          {
+            mode: "T5 Leppington-Schofields",
+            query: `SELECT trip_id, route_id FROM trips WHERE trip_id = '52AF.974.155.4.M.4.88566216'`
+          },
+          {
+            mode: "T1 City-Penrith",
+            query: `SELECT trip_id, route_id FROM trips WHERE trip_id = '158J.1989.100.16.A.8.89040683'`
+          },
+          {
+            mode: "T6 Lidcombe-Bankstown",
+            query: `SELECT trip_id, route_id FROM trips WHERE trip_id = '71BR.1346.154.128.M.4.88362462'`
+          },
+          {
+            mode: "T4 Bondi Junction-Cronulla",
+            query: `SELECT trip_id, route_id FROM trips WHERE trip_id = '609M.487.143.4.T.8.88359675'`
+          },
+          {
+            mode: "T8 City-Revesby",
+            query: `SELECT trip_id, route_id FROM trips WHERE trip_id = '86-H.1346.154.128.A.8.88363531'`
+          },
+          {
+            mode: "T1/9 City-Berowra",
+            query: `SELECT trip_id, route_id FROM trips WHERE trip_id = '143R.487.143.32.A.8.88357843'`
+          },
+          {
+            mode: "T1 City-Emu Plains",
+            query: `SELECT trip_id, route_id FROM trips WHERE trip_id = '162M.1978.102.16.A.8.87903843'`
+          },
+          {
+            mode: "T9 City-Hornsby",
+            query: `SELECT trip_id, route_id FROM trips WHERE trip_id = '137P.974.155.16.A.8.88566437'`
+          },
+          {
+            mode: "T8 City-Sydenham",
+            query: `SELECT trip_id, route_id FROM trips WHERE trip_id = '60-C.487.143.32.M.8.88358071'`
+          },
+          {
+            mode: "T3 City-Liverpool",
+            query: `SELECT trip_id, route_id FROM trips WHERE trip_id = '18-D.487.143.4.B.8.88360597'`
+          },
+          {
+            mode: "T2 City-Parramatta",
+            query: `SELECT trip_id, route_id FROM trips WHERE trip_id = '92-B.487.143.32.A.8.88359247'`
+          },
+          {
+            mode: "T8 City-Macarthur",
+            query: `SELECT trip_id, route_id FROM trips WHERE trip_id = '14-P.1346.154.2.B.8.88364731'`
+          },
+          {
+            mode: "T2 City-Leppington",
+            query: `SELECT trip_id, route_id FROM trips WHERE trip_id = '64-E.974.155.60.M.8.88565190'`
+          },
+          {
+            mode: "T4 Bondi Junction-Waterfall",
+            query: `SELECT trip_id, route_id FROM trips WHERE trip_id = '611G.974.155.64.T.8.88590700'`
           }
         ]
       }

@@ -1,6 +1,8 @@
 const path = require('path');
 const fs = require('fs');
-const trainingRegions = require('./trainingRegions');
+const trainingRegions = require('./training-regions').trainingRegions;
+const { initDBSessions } = require('./db-init');
+const {Session, SessionService} = require('./services/session-service');
 // Load .env file only if it exists (for local development)
 // In Docker, environment variables are set via docker-compose.yml
 const envPath = path.join(__dirname, '../../.env');
@@ -32,7 +34,8 @@ const {
     getTop,
     getArchiveGameFromDB,
     isRunning,
-    getTime
+    getTime,
+    getArchiveGamesBySessionId
 } = require('./gameManager');
 const sts = require('./sort-the-stations');
 const app = express();
@@ -44,7 +47,9 @@ async function createGameMiddleware(req, res, next) {
         let starttime = Date.now();
         let country = req.body.country;
         let difficulty = req.body.difficulty;
-        let gameID = await createGame(country, difficulty, starttime);
+        //get sessionID from body (can be empty and verify if exists)
+        let sessionId = req.body.sessionId;
+        let gameID = await createGame(country, difficulty, starttime, sessionId);
         req.gameID = gameID;
         next();
     } catch (err) {
@@ -68,6 +73,36 @@ async function getArchiveGameMiddleware(req, res, next) {
     }
     next();
 }
+app.get('/session/generate',  async (req, res) => {
+  try {
+    const name = req.query.name;
+    const session = new Session(name);
+    sessionService.saveSession(session);
+    const sessionId = session.id;
+    res.json({ sessionId });
+  } catch (error) {
+    console.error('Error generating session:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/sessions/games', async (req, res) => {
+    try {
+        console.log('[DEBUG] In /sessions/games route handler');
+        const sessionId = req.query.sessionId;
+        if (!sessionId) {
+            return res.status(400).json({ error: 'Session ID is required' });
+        }
+        if (!await sessionService.sessionExists(sessionId)) {
+            return res.status(404).json({ error: 'Session not found' });
+        }
+        let sessions = await getArchiveGamesBySessionId(sessionId);
+        res.json({ games: sessions });
+    } catch (error) {
+        console.error('Error retrieving sessions:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 
 app.post('/start-game', createGameMiddleware, (req, res) => {
@@ -358,6 +393,16 @@ if (missingDatabases.length > 0) {
 }
 
 console.log('\n✓ All required database files found');
+console.log('Creating session-tables in archive database if not existing...');
+initDBSessions(dbPathArchive).then(() => {
+    console.log('✓ Session-tables are ready');
+}).catch((err) => {
+    console.error('❌ ERROR initializing session-tables:', err);
+    process.exit(1);
+});
+
+const sessionService = new SessionService(dbPathArchive);
+
 console.log('Starting server...\n');
 
 const server = app.listen(PORT, () => {

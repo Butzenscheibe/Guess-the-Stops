@@ -53,6 +53,10 @@ If you don't have these database files, the application will crash on startup.
 
 ## Managing the Application
 
+For the bounded Docker log policy and the separate, gated rollout on an existing
+host, see [Docker log rotation](docs/docker-log-rotation.md). A configuration
+merge or container restart alone does not enable rotation on an existing container.
+
 ### View logs
 ```bash
 docker-compose logs -f

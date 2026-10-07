@@ -15,6 +15,12 @@ services:
       # Mount the database directory to persist SQLite databases
       - ./database:/app/database
     restart: unless-stopped
+    # Bounded local stdout/stderr history; see docs/docker-log-rotation.md.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
     networks:
       - guess-the-stops-network
 
